@@ -6,7 +6,7 @@
   <meta name="description" content="ASRFlow — 异构 2-Pass 实时语音识别网关。低延迟流式首遍（Paraformer-online / ONNX）+ 高精度异步二遍（Qwen3-ASR / vLLM）。" />
   <title>ASRFlow — 异构 2-Pass 实时语音识别网关</title>
   <link rel="icon" type="image/png" href="assets/logo.png?v=3" />
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <!-- Background Ambience -->
@@ -160,15 +160,6 @@
                   </span>
                   <span class="footer-stat">实时率 RTF: <strong>0.11</strong></span>
                   <span class="footer-stat">L0/L1/L2 防退化守卫: <strong class="text-emerald">ACTIVE</strong></span>
-                </div>
-                <div class="footer-status-right">
-                  <button class="demo-replay-btn" id="demoReplayBtn" type="button" title="重新播放 2-Pass 交互演示">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <polyline points="1 4 1 10 7 10"></polyline>
-                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-                    </svg>
-                    <span>重播演示</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -395,7 +386,7 @@
 
           <!-- Primary View: Interactive Animated SVG Flow Diagram -->
           <div class="arch-flow-stage" id="archFlowStage">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="100%" height="auto" class="asrflow-arch-svg" role="img" aria-label="ASRFlow 异构 2-Pass 实时数据流拓扑图">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="100%" class="asrflow-arch-svg" role="img" aria-label="ASRFlow 异构 2-Pass 实时数据流拓扑图">
               <defs>
                 <linearGradient id="svg-bg" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#080e1a"/>
@@ -906,6 +897,6 @@ pip install -r requirements-base.txt">
   </footer>
 
   <!-- Site Interactions & Animation Controller -->
-  <script src="assets/site.js?v=5" defer></script>
+  <script src="assets/site.js?v=6" defer></script>
 </body>
 </html>

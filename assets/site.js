@@ -32,7 +32,6 @@
   const demoResultText = document.getElementById('demoResultText');
   const demoTextContent = document.getElementById('demoTextContent');
   const demoTypingCursor = document.getElementById('demoTypingCursor');
-  const demoReplayBtn = document.getElementById('demoReplayBtn');
 
   const WAVE_BAR_COUNT = 36;
   let waveBars = [];
@@ -46,64 +45,67 @@
     for (let i = 0; i < WAVE_BAR_COUNT; i++) {
       const bar = document.createElement('span');
       bar.className = 'wave-bar';
-      bar.style.height = isReducedMotion ? '12px' : '4px';
+      bar.style.height = isReducedMotion ? '10px' : '7px';
       audioWaveform.appendChild(bar);
       waveBars.push(bar);
-    }
-
-    if (isReducedMotion) {
-      if (audioEnergyTag) audioEnergyTag.textContent = '-52 dBFS';
-      return;
     }
 
     if (waveIntervalId) {
       clearInterval(waveIntervalId);
     }
 
+    const intervalMs = isReducedMotion ? 120 : 60;
+
     waveIntervalId = setInterval(() => {
       const now = Date.now();
       if (currentWavePhase === 'speaking') {
         waveBars.forEach((bar, idx) => {
           const norm = idx / (WAVE_BAR_COUNT - 1);
-          const envelope = Math.sin(norm * Math.PI);
-          const h1 = Math.sin(now * 0.013 + idx * 0.48);
-          const h2 = Math.cos(now * 0.021 - idx * 0.32);
-          const factor = (h1 + h2 + 2) / 4;
-          const height = Math.max(4, Math.min(26, Math.round(5 + envelope * 18 * factor + Math.random() * 3)));
+          const baseEnvelope = 0.38 + 0.62 * Math.sin(norm * Math.PI);
+          const h1 = Math.sin(now * 0.012 + idx * 0.44);
+          const h2 = Math.cos(now * 0.018 - idx * 0.32);
+          const h3 = Math.sin(now * 0.007 + idx * 0.7);
+          const factor = (h1 * 0.45 + h2 * 0.35 + h3 * 0.2 + 1) / 2;
+          const maxPeak = isReducedMotion ? 18 : 34;
+          const minPeak = isReducedMotion ? 8 : 12;
+          const height = Math.max(minPeak, Math.min(maxPeak, Math.round(minPeak + baseEnvelope * (maxPeak - minPeak) * factor + (isReducedMotion ? 0 : Math.random() * 4))));
           bar.style.height = `${height}px`;
         });
-        if (audioEnergyTag && Math.random() < 0.28) {
-          const speechDb = ['-20 dBFS', '-22 dBFS', '-19 dBFS', '-24 dBFS', '-21 dBFS'];
+        if (audioEnergyTag && Math.random() < 0.32) {
+          const speechDb = ['-18 dBFS', '-20 dBFS', '-22 dBFS', '-24 dBFS', '-26 dBFS'];
           audioEnergyTag.textContent = speechDb[Math.floor(Math.random() * speechDb.length)];
         }
       } else {
-        const t = now / 320;
+        const t = now / 260;
         waveBars.forEach((bar, idx) => {
-          const jitter = Math.sin(t + idx * 0.32) * 1.3;
-          const height = Math.max(3, Math.min(7, Math.round(4 + jitter)));
+          const jitter = Math.sin(t + idx * 0.42) * 2.2 + Math.cos(t * 0.7 - idx * 0.28) * 1.4;
+          const base = 8;
+          const height = isReducedMotion
+            ? Math.max(6, Math.min(10, Math.round(base + Math.sin(t + idx * 0.3) * 1.5)))
+            : Math.max(5, Math.min(13, Math.round(base + jitter)));
           bar.style.height = `${height}px`;
         });
-        if (audioEnergyTag && Math.random() < 0.12) {
-          const idleDb = ['-51 dBFS', '-52 dBFS', '-53 dBFS'];
+        if (audioEnergyTag && Math.random() < 0.15) {
+          const idleDb = ['-48 dBFS', '-50 dBFS', '-52 dBFS', '-54 dBFS'];
           audioEnergyTag.textContent = idleDb[Math.floor(Math.random() * idleDb.length)];
         }
       }
-    }, 60);
+    }, intervalMs);
   }
 
   const SPEECH_CHARS = ['今', '今天', '今天天', '今天天气', '今天天气怎', '今天天气怎么', '今天天气怎么样'];
   const TYPING_LATENCIES = ['205ms', '215ms', '220ms', '230ms', '225ms', '235ms', '245ms'];
   const TYPING_TIMESTAMPS = [
     '14:32:01.320',
-    '14:32:01.550',
-    '14:32:01.780',
-    '14:32:02.010',
-    '14:32:02.240',
-    '14:32:02.470',
-    '14:32:02.700'
+    '14:32:01.740',
+    '14:32:02.160',
+    '14:32:02.580',
+    '14:32:03.000',
+    '14:32:03.420',
+    '14:32:03.840'
   ];
 
-  const HERO_LOOP_DURATION = 11500;
+  const HERO_LOOP_DURATION = 9100;
   let heroTimeouts = [];
 
   function clearHeroTimeouts() {
@@ -163,62 +165,50 @@
   function startHeroDemoLoop() {
     resetHeroDemo();
 
-    if (isReducedMotion) {
-      if (demoTextContent) demoTextContent.textContent = '“今天天气怎么样？”';
-      if (demoTypingCursor) demoTypingCursor.classList.add('is-hidden');
-      if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-final';
-      if (demoResultBadge) {
-        demoResultBadge.className = 'event-badge badge-final';
-        demoResultBadge.textContent = 'final';
-      }
-      if (demoResultLatency) demoResultLatency.textContent = 'vLLM 540ms · 守卫校验通过';
-      if (demoResultNote) demoResultNote.textContent = 'Qwen3-ASR 异步定稿 · 标点修正完成';
-      if (demoResultTime) demoResultTime.textContent = '14:32:03.960';
-      if (demoResultText) demoResultText.className = 'stream-event-text text-final';
-      if (telemetryPass1) telemetryPass1.textContent = '200~600ms';
-      if (telemetryVad) telemetryVad.textContent = 'Connected';
-      if (telemetryPass2) telemetryPass2.textContent = '540ms';
-      if (audioEnergyTag) audioEnergyTag.textContent = '-52 dBFS';
-      return;
-    }
-
-    // Step 1: Speech begins & Pass-1 initialization (t = 800ms)
+    // Step 1: Speech begins & Pass-1 initialization (t = 700ms)
     heroTimeouts.push(setTimeout(() => {
       currentWavePhase = 'speaking';
       if (audioEnergyTag) audioEnergyTag.textContent = '-22 dBFS';
       if (telemetryVad) telemetryVad.textContent = 'Speech';
-      if (telemetryVadPill) telemetryVadPill.classList.add('is-active');
-      if (telemetryPass1) telemetryPass1.textContent = '210ms';
-      if (telemetryPass1Pill) telemetryPass1Pill.classList.add('is-active');
+      if (telemetryVadPill) {
+        telemetryVadPill.classList.remove('is-busy');
+        telemetryVadPill.classList.add('is-active');
+      }
+      if (telemetryPass1) telemetryPass1.textContent = '205ms';
+      if (telemetryPass1Pill) {
+        telemetryPass1Pill.classList.remove('is-busy');
+        telemetryPass1Pill.classList.add('is-active');
+      }
 
       if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-partial';
       if (demoResultBadge) {
         demoResultBadge.className = 'event-badge badge-partial';
         demoResultBadge.textContent = 'partial';
       }
-      if (demoResultLatency) demoResultLatency.textContent = '210ms';
+      if (demoResultLatency) demoResultLatency.textContent = '205ms';
       if (demoResultNote) demoResultNote.textContent = 'ONNX Paraformer-online 流式推理中';
-      if (demoResultTime) demoResultTime.textContent = '14:32:01.120';
+      if (demoResultTime) demoResultTime.textContent = '14:32:01.080';
+      if (demoResultText) demoResultText.className = 'stream-event-text text-partial';
       if (demoTypingCursor) demoTypingCursor.classList.remove('is-hidden');
-    }, 800));
+    }, 700));
 
-    // Step 2: Incremental character-by-character typing (t = 1100ms ~ 2780ms)
+    // Step 2: Incremental character-by-character typing (t = 1000ms ~ 3520ms)
     SPEECH_CHARS.forEach((chars, i) => {
       heroTimeouts.push(setTimeout(() => {
         if (demoTextContent) demoTextContent.textContent = chars;
         if (demoResultLatency) demoResultLatency.textContent = TYPING_LATENCIES[i];
         if (telemetryPass1) telemetryPass1.textContent = TYPING_LATENCIES[i];
         if (demoResultTime) demoResultTime.textContent = TYPING_TIMESTAMPS[i];
-      }, 1100 + i * 280));
+      }, 1000 + i * 420));
     });
 
-    // Step 3: FSMN-VAD Endpoint Cutoff & Provisional Sentence (t = 3500ms)
+    // Step 3: FSMN-VAD Endpoint Cutoff & Provisional Sentence (t = 4400ms)
     heroTimeouts.push(setTimeout(() => {
       currentWavePhase = 'idle';
-      if (audioEnergyTag) audioEnergyTag.textContent = '-45 dBFS (Silence)';
+      if (audioEnergyTag) audioEnergyTag.textContent = '-48 dBFS (Silence)';
       if (telemetryVad) telemetryVad.textContent = 'Endpoint';
-      if (telemetryVadPill) telemetryVadPill.classList.remove('is-active');
-      if (telemetryPass1Pill) telemetryPass1Pill.classList.remove('is-active');
+      if (telemetryVadPill) telemetryVadPill.classList.remove('is-active', 'is-busy');
+      if (telemetryPass1Pill) telemetryPass1Pill.classList.remove('is-active', 'is-busy');
 
       if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-provisional';
       if (demoResultBadge) {
@@ -228,14 +218,18 @@
       if (demoResultLatency) demoResultLatency.textContent = 'VAD 380ms';
       if (demoResultNote) demoResultNote.textContent = 'FSMN-VAD 检出句尾停顿 · 快速整句先行上屏';
       if (demoResultText) demoResultText.className = 'stream-event-text text-provisional';
-      if (demoResultTime) demoResultTime.textContent = '14:32:02.980';
-    }, 3500));
+      if (demoTextContent) demoTextContent.textContent = '今天天气怎么样';
+      if (demoResultTime) demoResultTime.textContent = '14:32:04.120';
+    }, 4400));
 
-    // Step 4: Dispatch to Pass-2 FinalQueue & vLLM Busy (t = 4400ms)
+    // Step 4: Dispatch to Pass-2 FinalQueue & vLLM Busy (t = 5400ms)
     heroTimeouts.push(setTimeout(() => {
       if (telemetryVad) telemetryVad.textContent = 'Silence';
       if (telemetryPass2) telemetryPass2.textContent = 'vLLM 480ms...';
-      if (telemetryPass2Pill) telemetryPass2Pill.classList.add('is-busy');
+      if (telemetryPass2Pill) {
+        telemetryPass2Pill.classList.remove('is-active');
+        telemetryPass2Pill.classList.add('is-busy');
+      }
 
       if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-pass2';
       if (demoResultBadge) {
@@ -245,25 +239,23 @@
       if (demoResultLatency) demoResultLatency.textContent = 'vLLM 推理中...';
       if (demoResultNote) demoResultNote.textContent = '提交 FinalQueue · Qwen3-ASR 异步定稿中...';
       if (demoResultText) demoResultText.className = 'stream-event-text text-pass2';
-      if (demoResultTime) demoResultTime.textContent = '14:32:03.420';
-    }, 4400));
+      if (demoResultTime) demoResultTime.textContent = '14:32:04.560';
+    }, 5400));
 
-    // Step 5: Pass-2 In-place 回刷 + Refresh Flash (t = 5400ms)
+    // Step 5: Pass-2 In-place 回刷 + Refresh Flash (t = 6700ms)
     heroTimeouts.push(setTimeout(() => {
-      // In-place replacement
-      if (demoTextContent) demoTextContent.textContent = '“今天天气怎么样？”';
+      if (demoTextContent) demoTextContent.textContent = '今天天气怎么样？';
 
-      // Trigger refresh flash animation
       if (demoResultText) {
         demoResultText.className = 'stream-event-text text-final';
-        demoResultText.classList.remove('text-refresh-flash');
-        void demoResultText.offsetWidth; // Force DOM reflow
-        demoResultText.classList.add('text-refresh-flash');
+        if (!isReducedMotion) {
+          demoResultText.classList.remove('text-refresh-flash');
+          void demoResultText.offsetWidth; // Force reflow
+          demoResultText.classList.add('text-refresh-flash');
+        }
       }
 
-      // Hide typing cursor in final state
       if (demoTypingCursor) demoTypingCursor.classList.add('is-hidden');
-
       if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-final';
       if (demoResultBadge) {
         demoResultBadge.className = 'event-badge badge-final';
@@ -271,33 +263,26 @@
       }
       if (demoResultLatency) demoResultLatency.textContent = 'vLLM 540ms · 守卫校验通过';
       if (demoResultNote) demoResultNote.textContent = 'Qwen3-ASR 异步定稿完成 · 标点修正完成';
-      if (demoResultTime) demoResultTime.textContent = '14:32:03.960';
+      if (demoResultTime) demoResultTime.textContent = '14:32:05.100';
 
       if (telemetryPass2) telemetryPass2.textContent = '540ms';
       if (telemetryPass2Pill) {
         telemetryPass2Pill.classList.remove('is-busy');
         telemetryPass2Pill.classList.add('is-active');
       }
-    }, 5400));
+    }, 6700));
 
-    // Step 6: Telemetry settling (t = 6800ms)
+    // Step 6: Telemetry settling during dwell (t = 7900ms)
     heroTimeouts.push(setTimeout(() => {
       if (telemetryPass2Pill) telemetryPass2Pill.classList.remove('is-active');
-    }, 6800));
+      if (telemetryPass2) telemetryPass2.textContent = 'Idle';
+      if (demoResultNote) demoResultNote.textContent = '已完成定稿输出 · 保持会话监听中';
+    }, 7900));
 
-    // Step 7: Auto-loop cycle
+    // Step 7: Auto-loop cycle (t = 9100ms; post-final dwell is 9100 - 6700 = 2400ms <= 2.5s)
     heroTimeouts.push(setTimeout(() => {
       startHeroDemoLoop();
     }, HERO_LOOP_DURATION));
-  }
-
-  // Replay Button Listener
-  if (demoReplayBtn) {
-    demoReplayBtn.addEventListener('click', () => {
-      demoReplayBtn.classList.add('btn-clicked');
-      setTimeout(() => demoReplayBtn.classList.remove('btn-clicked'), 300);
-      startHeroDemoLoop();
-    });
   }
 
   /* =========================================================================
@@ -563,15 +548,29 @@
   /* =========================================================================
      DOM Ready Bootstrapper
      ========================================================================= */
-  document.addEventListener('DOMContentLoaded', () => {
-    initWaveform();
-    startHeroDemoLoop();
-    initScrollReveal();
-    initCopyButtons();
-    initSvgNodeInteractions();
-    highlightArchStep(0);
-    startArchStepLoop();
-    initSmoothScrollAndSpy();
-  });
+  function boot() {
+    try {
+      initWaveform();
+      startHeroDemoLoop();
+    } catch (e) {
+      console.warn('Hero demo init failed', e);
+    }
+    try {
+      initScrollReveal();
+      initCopyButtons();
+      initSvgNodeInteractions();
+      highlightArchStep(0);
+      startArchStepLoop();
+      initSmoothScrollAndSpy();
+    } catch (e) {
+      console.warn('Site chrome init failed', e);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 
 })();

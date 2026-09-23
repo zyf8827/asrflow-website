@@ -547,19 +547,20 @@ code {
 .audio-waveform {
   display: flex;
   align-items: center;
-  gap: 2px;
-  height: 30px;
-  min-width: 160px;
-  max-width: 200px;
+  gap: 2.5px;
+  height: 44px;
+  min-width: 260px;
+  max-width: 320px;
 }
 
 .wave-bar {
-  flex: 0 0 2.5px;
-  width: 2.5px;
+  flex: 0 0 4px;
+  width: 4px;
   background: linear-gradient(180deg, var(--cyan-300), var(--blue-500));
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.55);
   border-radius: 2px;
-  min-height: 3px;
-  height: 4px;
+  min-height: 4px;
+  height: 6px;
   transition: height 0.06s ease;
 }
 
@@ -741,12 +742,12 @@ code {
 }
 
 #demoResultText {
-  font-size: 1.12rem;
+  font-size: 1.18rem;
   line-height: 1.55;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-weight: 500;
-  min-height: 1.7em;
+  min-height: 1.8em;
   display: flex;
   align-items: center;
   word-break: break-word;
@@ -971,34 +972,6 @@ code {
 
 .text-emerald {
   color: var(--emerald-400) !important;
-}
-
-.demo-replay-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  font-size: 0.76rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.demo-replay-btn:hover {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: var(--cyan-400);
-  color: var(--cyan-100);
-}
-
-.demo-replay-btn svg {
-  width: 13px;
-  height: 13px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
 }
 
 /* ==========================================================================
@@ -1326,6 +1299,7 @@ section[id] {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 1120 / 640;
   max-width: 1120px;
   margin: 0 auto;
   border-radius: var(--radius-md);
@@ -1850,7 +1824,6 @@ section[id] {
   }
 
   .badge-pulse,
-  .wave-bar,
   .typing-cursor,
   .status-pulse-led,
   .badge-glow,
