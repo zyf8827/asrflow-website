@@ -1,0 +1,425 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="100%" height="100%" class="asrflow-arch-svg" role="img" aria-label="ASRFlow 异构 2-Pass 实时数据流拓扑图">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080e1a"/>
+      <stop offset="50%" stop-color="#0b1324"/>
+      <stop offset="100%" stop-color="#070c17"/>
+    </linearGradient>
+
+    <!-- Card Fill Gradients -->
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141f36"/>
+      <stop offset="100%" stop-color="#0e172a"/>
+    </linearGradient>
+
+    <linearGradient id="card-grad-pass1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#102538"/>
+      <stop offset="100%" stop-color="#0b1a29"/>
+    </linearGradient>
+
+    <linearGradient id="card-grad-vad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f2628"/>
+      <stop offset="100%" stop-color="#0a1c1e"/>
+    </linearGradient>
+
+    <linearGradient id="card-grad-pass2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#20183b"/>
+      <stop offset="100%" stop-color="#130e24"/>
+    </linearGradient>
+
+    <linearGradient id="card-grad-guard" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#221d33"/>
+      <stop offset="100%" stop-color="#141122"/>
+    </linearGradient>
+
+    <!-- Glowing Filters -->
+    <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glow-amber" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glow-purple" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="drop-shadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+
+    <!-- Arrow Markers -->
+    <marker id="m-cyan" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0, 8 3.5, 0 7" fill="#38bdf8"/>
+    </marker>
+    <marker id="m-emerald" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0, 8 3.5, 0 7" fill="#34d399"/>
+    </marker>
+    <marker id="m-amber" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0, 8 3.5, 0 7" fill="#fbbf24"/>
+    </marker>
+    <marker id="m-purple" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0, 8 3.5, 0 7" fill="#c084fc"/>
+    </marker>
+    <marker id="m-slate" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0, 8 3.5, 0 7" fill="#64748b"/>
+    </marker>
+
+    <!-- Grid Background -->
+    <pattern id="arch-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#18253b" stroke-width="0.8" opacity="0.45"/>
+    </pattern>
+
+    <style>
+      .node-card {
+        transition: transform 0.2s ease, stroke 0.2s ease;
+      }
+      .node-card:hover {
+        stroke-width: 2px;
+      }
+      .flow-line {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .flow-pulse-cyan {
+        stroke-dasharray: 8 6;
+        animation: anim-flow-fwd 1.8s linear infinite;
+      }
+      .flow-pulse-amber {
+        stroke-dasharray: 7 5;
+        animation: anim-flow-fwd 2s linear infinite;
+      }
+      .flow-pulse-purple {
+        stroke-dasharray: 8 6;
+        animation: anim-flow-fwd 2.2s linear infinite;
+      }
+      .flow-pulse-emerald {
+        stroke-dasharray: 8 6;
+        animation: anim-flow-fwd 1.9s linear infinite;
+      }
+      .flow-pulse-slate {
+        stroke-dasharray: 6 5;
+        animation: anim-flow-fwd 2.5s linear infinite;
+      }
+      @keyframes anim-flow-fwd {
+        from { stroke-dashoffset: 28; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes anim-glow-pulse {
+        0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 3px currentColor); }
+        50% { opacity: 0.35; filter: none; }
+      }
+      .badge-glow {
+        animation: anim-glow-pulse 2.4s ease-in-out infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .flow-pulse-cyan, .flow-pulse-amber, .flow-pulse-purple, .flow-pulse-emerald, .flow-pulse-slate,
+        .badge-glow, animateMotion, animate {
+          animation: none !important;
+          stroke-dasharray: none !important;
+        }
+      }
+    </style>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1120" height="640" rx="16" fill="url(#bg-grad)"/>
+  <rect width="1120" height="640" rx="16" fill="url(#arch-grid)"/>
+
+  <!-- Subtle Radial Ambience in SVG -->
+  <ellipse cx="260" cy="120" rx="280" ry="180" fill="#0284c7" opacity="0.08"/>
+  <ellipse cx="900" cy="240" rx="240" ry="180" fill="#0d9488" opacity="0.07"/>
+  <ellipse cx="800" cy="460" rx="300" ry="180" fill="#7c3aed" opacity="0.09"/>
+
+  <!-- =====================================================================
+       CONNECTING PATHS / EDGES (Layered underneath nodes)
+       ===================================================================== -->
+  <g class="flow-edges" fill="none">
+    <!-- 1. Client -> Gateway -->
+    <path id="path-client-gateway" d="M 260 82 L 360 82" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#m-cyan)" class="flow-line flow-pulse-cyan"/>
+
+    <!-- 2. Gateway -> Audio Ring Buffer -->
+    <path id="path-gateway-buffer" d="M 680 82 L 790 82" stroke="#64748b" stroke-width="2.2" marker-end="url(#m-slate)" class="flow-line flow-pulse-slate"/>
+
+    <!-- 3. Audio Ring Buffer -> Pass-1 (Paraformer-online) -->
+    <path id="path-buffer-pass1" d="M 945 125 L 945 190" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#m-cyan)" class="flow-line flow-pulse-cyan"/>
+
+    <!-- 4. Audio Ring Buffer -> FSMN-VAD -->
+    <path id="path-buffer-vad" d="M 865 125 V 158 H 365 V 190" stroke="#34d399" stroke-width="2.4" marker-end="url(#m-emerald)" class="flow-line flow-pulse-emerald"/>
+
+    <!-- 5. Pass-1 Partial -> Client (via Gateway) Feedback Path -->
+    <path id="path-pass1-partial" d="M 740 235 H 580 V 135 H 530" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#m-cyan)" class="flow-line flow-pulse-cyan" opacity="0.95"/>
+
+    <!-- 6. VAD Provisional -> Client Feedback Path -->
+    <path id="path-vad-provisional" d="M 205 235 H 145 V 135" stroke="#fbbf24" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#m-amber)" class="flow-line flow-pulse-amber" opacity="0.95"/>
+
+    <!-- 7. VAD -> FinalQueue (Segment handover upon endpointing) -->
+    <path id="path-vad-finalqueue" d="M 365 295 L 365 355" stroke="#34d399" stroke-width="2.4" marker-end="url(#m-emerald)" class="flow-line flow-pulse-emerald"/>
+
+    <!-- 8. FinalQueue -> Pass-2 vLLM (HTTP Dispatch) -->
+    <path id="path-finalqueue-pass2" d="M 525 397 L 640 397" stroke="#c084fc" stroke-width="2.5" marker-end="url(#m-purple)" class="flow-line flow-pulse-purple"/>
+
+    <!-- 9. Pass-2 vLLM -> Consistency Guard -->
+    <path id="path-pass2-guard" d="M 855 445 L 855 490" stroke="#c084fc" stroke-width="2.4" marker-end="url(#m-purple)" class="flow-line flow-pulse-purple"/>
+
+    <!-- 10. Consistency Guard -> Final Delivery -->
+    <path id="path-guard-delivery" d="M 640 532 L 525 532" stroke="#c084fc" stroke-width="2.5" marker-end="url(#m-purple)" class="flow-line flow-pulse-purple"/>
+
+    <!-- 11. Final Delivery -> Client (Final Result Return) -->
+    <path id="path-delivery-client" d="M 205 532 H 85 V 135" stroke="#a855f7" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#m-purple)" class="flow-line flow-pulse-purple" opacity="0.95"/>
+  </g>
+
+  <!-- =====================================================================
+       ANIMATED MOVING PACKET PARTICLES (SMIL / Hardware Accelerated)
+       ===================================================================== -->
+  <g class="flow-particles" pointer-events="none">
+    <!-- Particle 1: PCM Audio stream Client -> Gateway -->
+    <circle r="4.5" fill="#38bdf8" filter="url(#glow-cyan)">
+      <animateMotion dur="1.8s" repeatCount="indefinite" path="M 260 82 L 360 82"/>
+    </circle>
+
+    <!-- Particle 2: Audio Buffer -> Pass-1 -->
+    <circle r="4.5" fill="#38bdf8" filter="url(#glow-cyan)">
+      <animateMotion dur="1.4s" repeatCount="indefinite" path="M 945 125 L 945 190"/>
+    </circle>
+
+    <!-- Particle 3: Audio Buffer -> VAD -->
+    <circle r="4.5" fill="#34d399" filter="url(#glow-cyan)">
+      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 865 125 V 158 H 365 V 190"/>
+    </circle>
+
+    <!-- Particle 4: Pass-1 Partial -> Client -->
+    <circle r="4.5" fill="#38bdf8" filter="url(#glow-cyan)">
+      <animateMotion dur="2.4s" repeatCount="indefinite" path="M 740 235 H 580 V 135 H 530"/>
+    </circle>
+
+    <!-- Particle 5: VAD Provisional -> Client -->
+    <circle r="5" fill="#fbbf24" filter="url(#glow-amber)">
+      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 205 235 H 145 V 135"/>
+    </circle>
+
+    <!-- Particle 6: VAD -> FinalQueue (Segment) -->
+    <circle r="4.5" fill="#34d399" filter="url(#glow-cyan)">
+      <animateMotion dur="1.6s" repeatCount="indefinite" path="M 365 295 L 365 355"/>
+    </circle>
+
+    <!-- Particle 7: FinalQueue -> Pass-2 HTTP -->
+    <circle r="5" fill="#c084fc" filter="url(#glow-purple)">
+      <animateMotion dur="1.8s" repeatCount="indefinite" path="M 525 397 L 640 397"/>
+    </circle>
+
+    <!-- Particle 8: Consistency Guard -> Delivery -->
+    <circle r="5" fill="#c084fc" filter="url(#glow-purple)">
+      <animateMotion dur="1.8s" repeatCount="indefinite" path="M 640 532 L 525 532"/>
+    </circle>
+
+    <!-- Particle 9: Final Event Delivery -> Client -->
+    <circle r="5.5" fill="#e879f9" filter="url(#glow-purple)">
+      <animateMotion dur="3.2s" repeatCount="indefinite" path="M 205 532 H 85 V 135"/>
+    </circle>
+  </g>
+
+  <!-- =====================================================================
+       ROW 1: CLIENT, GATEWAY, AUDIO RING BUFFER
+       ===================================================================== -->
+  <!-- 1. Client Node -->
+  <g class="node-group" id="node-client" filter="url(#drop-shadow)">
+    <rect class="node-card" x="40" y="40" width="220" height="85" rx="14" fill="url(#card-grad)" stroke="#38bdf8" stroke-opacity="0.6" stroke-width="1.4"/>
+    <rect x="52" y="52" width="30" height="30" rx="8" fill="#0e2838"/>
+    <text x="67" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#38bdf8">🎙</text>
+    <text x="92" y="65" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">Client 客户端</text>
+    <text x="92" y="85" font-family="system-ui, sans-serif" font-size="11.5" fill="#94a3b8">16kHz PCM 单声道推流</text>
+    <text x="92" y="105" font-family="system-ui, sans-serif" font-size="10.5" fill="#38bdf8">WebSocket 全双工连接</text>
+  </g>
+
+  <!-- Flow Badge 1: PCM Push -->
+  <g transform="translate(270, 68)">
+    <rect width="80" height="22" rx="11" fill="#0b1e33" stroke="#38bdf8" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="40" y="15" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#7dd3fc">16kHz PCM →</text>
+  </g>
+
+  <!-- 2. WebSocket Gateway Node -->
+  <g class="node-group" id="node-gateway" filter="url(#drop-shadow)">
+    <rect class="node-card" x="360" y="40" width="320" height="85" rx="14" fill="url(#card-grad)" stroke="#0ea5e9" stroke-opacity="0.6" stroke-width="1.4"/>
+    <rect x="374" y="52" width="30" height="30" rx="8" fill="#0d283d"/>
+    <text x="389" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#38bdf8">⇄</text>
+    <text x="414" y="65" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">WebSocket Gateway</text>
+    <text x="414" y="85" font-family="system-ui, sans-serif" font-size="11.5" fill="#94a3b8">连接状态管理 · 音频切片分帧</text>
+    <text x="414" y="105" font-family="system-ui, sans-serif" font-size="10.5" fill="#0ea5e9">JSON 信令与二进制流解耦</text>
+  </g>
+
+  <!-- Flow Badge 2: Buffer Write -->
+  <g transform="translate(695, 68)">
+    <rect width="80" height="22" rx="11" fill="#0b172a" stroke="#64748b" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="40" y="15" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#94a3b8">分帧入队 →</text>
+  </g>
+
+  <!-- 3. Audio Ring Buffer Node -->
+  <g class="node-group" id="node-buffer" filter="url(#drop-shadow)">
+    <rect class="node-card" x="790" y="40" width="290" height="85" rx="14" fill="url(#card-grad)" stroke="#475569" stroke-width="1.4"/>
+    <rect x="804" y="52" width="30" height="30" rx="8" fill="#182338"/>
+    <text x="819" y="72" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">▤</text>
+    <text x="844" y="65" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">Audio Ring Buffer</text>
+    <text x="844" y="85" font-family="system-ui, sans-serif" font-size="11.5" fill="#94a3b8">低延迟环形缓冲 · 帧切片</text>
+    <text x="844" y="105" font-family="system-ui, sans-serif" font-size="10.5" fill="#a5b4fc">锁存首帧时间戳 (防漂移)</text>
+  </g>
+
+  <!-- Flow Badge: Stream chunks to Pass-1 -->
+  <g transform="translate(952, 142)">
+    <rect width="88" height="20" rx="10" fill="#08202d" stroke="#38bdf8" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="44" y="14" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#7dd3fc">流式音频帧 ↓</text>
+  </g>
+
+  <!-- Flow Badge: Audio to VAD -->
+  <g transform="translate(480, 148)">
+    <rect width="96" height="20" rx="10" fill="#09241f" stroke="#34d399" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="48" y="14" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#6ee7b7">同步音频帧 ↓</text>
+  </g>
+
+  <!-- =====================================================================
+       ROW 2: FSMN-VAD & PASS-1 PARAFORMER-ONLINE
+       ===================================================================== -->
+  <!-- 4. FSMN-VAD Node -->
+  <g class="node-group" id="node-vad" filter="url(#drop-shadow)">
+    <rect class="node-card" x="205" y="190" width="320" height="105" rx="14" fill="url(#card-grad-vad)" stroke="#34d399" stroke-opacity="0.6" stroke-width="1.4"/>
+    <rect x="205" y="190" width="8" height="105" rx="4" fill="#34d399"/>
+    <text x="228" y="218" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">FSMN-VAD 语音活动检测</text>
+    <text x="228" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">静音断句 · Sentence Endpointing</text>
+    <text x="228" y="260" font-family="system-ui, sans-serif" font-size="11" fill="#34d399">L0 能量过滤 (&lt;-80dBFS) + L1 门控锁存</text>
+    <text x="228" y="280" font-family="system-ui, sans-serif" font-size="11" fill="#fbbf24">触发切句 → provisional &amp; 送二遍</text>
+  </g>
+
+  <!-- 5. Pass-1 Paraformer-online Node -->
+  <g class="node-group" id="node-pass1" filter="url(#drop-shadow)">
+    <rect class="node-card" x="740" y="190" width="340" height="105" rx="14" fill="url(#card-grad-pass1)" stroke="#38bdf8" stroke-opacity="0.6" stroke-width="1.4"/>
+    <rect x="740" y="190" width="8" height="105" rx="4" fill="#38bdf8"/>
+    <text x="763" y="218" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">Pass-1 Paraformer-online</text>
+    <text x="763" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">ONNX Runtime · 首遍动态多路合批</text>
+    <text x="763" y="260" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="#38bdf8">200~600ms 快速出字 · partial 增量反馈</text>
+    <text x="763" y="280" font-family="system-ui, sans-serif" font-size="11" fill="#7dd3fc">低延迟上屏交互体验</text>
+  </g>
+
+  <!-- Feedback Label 1: Partial Event -->
+  <g transform="translate(565, 178)">
+    <rect width="145" height="26" rx="13" fill="#082333" stroke="#38bdf8" stroke-opacity="0.7" stroke-width="1.2"/>
+    <circle cx="16" cy="13" r="4.5" fill="#38bdf8" class="badge-glow"/>
+    <text x="26" y="17" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#38bdf8">← partial (200ms)</text>
+  </g>
+
+  <!-- Feedback Label 2: Provisional Event -->
+  <g transform="translate(100, 178)">
+    <rect width="135" height="26" rx="13" fill="#291e0a" stroke="#fbbf24" stroke-opacity="0.7" stroke-width="1.2"/>
+    <circle cx="15" cy="13" r="4.5" fill="#fbbf24" class="badge-glow"/>
+    <text x="25" y="17" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24">← provisional 整句</text>
+  </g>
+
+  <!-- Flow Badge: Sentence Segment to Queue -->
+  <g transform="translate(372, 312)">
+    <rect width="112" height="22" rx="11" fill="#09241f" stroke="#34d399" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="56" y="15" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="#6ee7b7">断句切段音频 ↓</text>
+  </g>
+
+  <!-- =====================================================================
+       ROW 3: FINALQUEUE & PASS-2 QWEN3-ASR (vLLM)
+       ===================================================================== -->
+  <!-- 6. FinalQueue Node -->
+  <g class="node-group" id="node-finalqueue" filter="url(#drop-shadow)">
+    <rect class="node-card" x="205" y="355" width="320" height="85" rx="14" fill="url(#card-grad)" stroke="#818cf8" stroke-opacity="0.55" stroke-width="1.4"/>
+    <rect x="205" y="355" width="8" height="85" rx="4" fill="#818cf8"/>
+    <text x="228" y="382" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">FinalQueue 任务队列</text>
+    <text x="228" y="403" font-family="system-ui, sans-serif" font-size="11.5" fill="#94a3b8">切句音频段缓存 · 动态队列调度</text>
+    <text x="228" y="423" font-family="system-ui, sans-serif" font-size="11" fill="#a5b4fc">Micro-batch 微批并发聚合</text>
+  </g>
+
+  <!-- Flow Badge: HTTP to vLLM -->
+  <g transform="translate(535, 385)">
+    <rect width="95" height="24" rx="12" fill="#201538" stroke="#c084fc" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="47" y="16" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#e9d5ff">HTTP POST →</text>
+  </g>
+
+  <!-- 7. Pass-2 Qwen3-ASR (vLLM) Node -->
+  <g class="node-group" id="node-pass2" filter="url(#drop-shadow)">
+    <rect class="node-card" x="640" y="355" width="440" height="90" rx="14" fill="url(#card-grad-pass2)" stroke="#a855f7" stroke-opacity="0.65" stroke-width="1.4"/>
+    <rect x="640" y="355" width="8" height="90" rx="4" fill="#a855f7"/>
+    <text x="664" y="382" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">Pass-2 Qwen3-ASR (vLLM)</text>
+    <text x="664" y="403" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">独立 HTTP 进程解耦 · 独立 GPU 扩缩</text>
+    <text x="664" y="423" font-family="system-ui, sans-serif" font-size="11.5" font-weight="600" fill="#c084fc">异步高精度二遍 · 标点预测与全局语义定稿</text>
+  </g>
+
+  <!-- Flow Badge: Candidate to Guard -->
+  <g transform="translate(865, 455)">
+    <rect width="92" height="20" rx="10" fill="#1c132e" stroke="#c084fc" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="46" y="14" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#e9d5ff">二遍候选定稿 ↓</text>
+  </g>
+
+  <!-- =====================================================================
+       ROW 4: CONSISTENCY GUARD & FINAL DELIVERY
+       ===================================================================== -->
+  <!-- 8. Consistency Guard Node -->
+  <g class="node-group" id="node-guard" filter="url(#drop-shadow)">
+    <rect class="node-card" x="640" y="490" width="440" height="85" rx="14" fill="url(#card-grad-guard)" stroke="#f43f5e" stroke-opacity="0.5" stroke-width="1.4"/>
+    <rect x="640" y="490" width="8" height="85" rx="4" fill="#f43f5e"/>
+    <text x="664" y="516" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">Consistency Guard &amp; L2 看门狗</text>
+    <text x="664" y="537" font-family="system-ui, sans-serif" font-size="11.5" fill="#94a3b8">首二遍一致性校验 · 过滤孤立幻觉与重复字</text>
+    <text x="664" y="556" font-family="system-ui, sans-serif" font-size="11" fill="#fbbf24">非语音态超时看门狗切段兜底</text>
+  </g>
+
+  <!-- Flow Badge: Guard to Delivery -->
+  <g transform="translate(535, 520)">
+    <rect width="95" height="24" rx="12" fill="#1f112e" stroke="#c084fc" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="47" y="16" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#e9d5ff">← 校验通过</text>
+  </g>
+
+  <!-- 9. Final Delivery Node -->
+  <g class="node-group" id="node-delivery" filter="url(#drop-shadow)">
+    <rect class="node-card" x="205" y="490" width="320" height="85" rx="14" fill="url(#card-grad)" stroke="#c084fc" stroke-opacity="0.6" stroke-width="1.4"/>
+    <rect x="205" y="490" width="8" height="85" rx="4" fill="#c084fc"/>
+    <text x="228" y="516" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#f8fafc">Client Final 交付</text>
+    <text x="228" y="537" font-family="system-ui, sans-serif" font-size="11.5" fill="#94a3b8">逆文本正则化 (ITN) · 说话人标识 (CAM++)</text>
+    <text x="228" y="556" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#c084fc">带标点高精度 final 结果推回客户端</text>
+  </g>
+
+  <!-- Final Return Label -->
+  <g transform="translate(30, 310)">
+    <rect width="138" height="26" rx="13" fill="#200d36" stroke="#c084fc" stroke-opacity="0.8" stroke-width="1.2"/>
+    <circle cx="16" cy="13" r="5" fill="#c084fc" class="badge-glow"/>
+    <text x="26" y="17" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#e9d5ff">↑ final 定稿交付</text>
+  </g>
+
+  <!-- =====================================================================
+       BOTTOM LEGEND STRIP
+       ===================================================================== -->
+  <g class="arch-legend" transform="translate(40, 595)">
+    <rect width="1040" height="36" rx="10" fill="#0d1527" stroke="#1e293b" stroke-width="1"/>
+    
+    <!-- Legend item 1 -->
+    <circle cx="28" cy="18" r="6" fill="#38bdf8"/>
+    <text x="42" y="22" font-family="system-ui, sans-serif" font-size="11.5" fill="#cbd5e1">Pass-1 Partial (200~600ms 增量字)</text>
+
+    <!-- Legend item 2 -->
+    <circle cx="280" cy="18" r="6" fill="#fbbf24"/>
+    <text x="294" y="22" font-family="system-ui, sans-serif" font-size="11.5" fill="#cbd5e1">FSMN-VAD Provisional (快速整句)</text>
+
+    <!-- Legend item 3 -->
+    <circle cx="540" cy="18" r="6" fill="#c084fc"/>
+    <text x="554" y="22" font-family="system-ui, sans-serif" font-size="11.5" fill="#cbd5e1">Pass-2 Final (Qwen3-ASR 高精度标点定稿)</text>
+
+    <!-- Legend item 4 -->
+    <circle cx="830" cy="18" r="6" fill="#34d399"/>
+    <text x="844" y="22" font-family="system-ui, sans-serif" font-size="11.5" fill="#cbd5e1">PCM 音频流 / 解耦调度通信</text>
+  </g>
+</svg>
