@@ -5,6 +5,7 @@
  * 2. Animated Architecture Controller (Step Sequencing + Node Interaction + Static Toggle)
  * 3. Scroll-Reveal Observer (prefers-reduced-motion aware)
  * 4. Clipboard Copy Utility
+ * 5. Smooth Page Navigation Scroll & Scrollspy
  */
 
 (function () {
@@ -13,284 +14,281 @@
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* =========================================================================
-     1. Live Hero Console & Streaming Demo
+     1. Live Hero Console & Streaming Demo (逐字吐字 + Pass-2 异步回刷)
      ========================================================================= */
-  const heroDemoContainer = document.getElementById('heroLiveDemo');
-  const demoEventsContainer = document.getElementById('demoEventsContainer');
   const audioWaveform = document.getElementById('audioWaveform');
-  const telemetryPass1 = document.getElementById('telemetryPass1');
-  const telemetryVad = document.getElementById('telemetryVad');
-  const telemetryPass2 = document.getElementById('telemetryPass2');
   const audioEnergyTag = document.getElementById('audioEnergyTag');
+  const telemetryPass1Pill = document.getElementById('telemetryPass1Pill');
+  const telemetryPass1 = document.getElementById('telemetryPass1');
+  const telemetryVadPill = document.getElementById('telemetryVadPill');
+  const telemetryVad = document.getElementById('telemetryVad');
+  const telemetryPass2Pill = document.getElementById('telemetryPass2Pill');
+  const telemetryPass2 = document.getElementById('telemetryPass2');
+  const demoResultPanel = document.getElementById('demoResultPanel');
+  const demoResultTime = document.getElementById('demoResultTime');
+  const demoResultBadge = document.getElementById('demoResultBadge');
+  const demoResultLatency = document.getElementById('demoResultLatency');
+  const demoResultNote = document.getElementById('demoResultNote');
+  const demoResultText = document.getElementById('demoResultText');
+  const demoTextContent = document.getElementById('demoTextContent');
+  const demoTypingCursor = document.getElementById('demoTypingCursor');
   const demoReplayBtn = document.getElementById('demoReplayBtn');
 
-  // Scripted events for the 2-Pass live stream simulation
-  const DEMO_TIMELINE = [
-    {
-      timeMs: 400,
-      action: 'start_speech_1',
-      energy: '-21 dBFS',
-      vad: 'Speech',
-      pass1: '210ms',
-      pass2: 'idle'
-    },
-    {
-      timeMs: 1000,
-      type: 'partial',
-      tag: 'partial',
-      latency: '210ms',
-      text: '您好，我',
-      timeStr: '14:32:01.120',
-      pass1: '210ms'
-    },
-    {
-      timeMs: 1800,
-      type: 'partial',
-      tag: 'partial',
-      latency: '240ms',
-      text: '您好，我想查询',
-      timeStr: '14:32:01.480',
-      pass1: '240ms'
-    },
-    {
-      timeMs: 2600,
-      type: 'partial',
-      tag: 'partial',
-      latency: '265ms',
-      text: '您好，我想查询订单',
-      timeStr: '14:32:01.820',
-      pass1: '265ms'
-    },
-    {
-      timeMs: 3400,
-      type: 'provisional',
-      tag: 'provisional',
-      latency: 'VAD 380ms',
-      text: '您好我想查询订单',
-      timeStr: '14:32:02.160',
-      note: 'FSMN-VAD 检出句尾停顿 · 快速整句先行上屏',
-      vad: 'Endpoint',
-      energy: '-42 dBFS (Silence)'
-    },
-    {
-      timeMs: 4400,
-      action: 'pass2_dispatch',
-      pass2: 'vLLM 480ms...',
-      vad: 'Silence'
-    },
-    {
-      timeMs: 5100,
-      type: 'final',
-      tag: 'final',
-      latency: 'vLLM 540ms · 守卫校验通过',
-      text: '“您好，我想查询订单状态。”',
-      timeStr: '14:32:02.720',
-      note: 'Qwen3-ASR 异步定稿 · 标点修正完成',
-      pass2: '540ms'
-    },
-    {
-      timeMs: 6200,
-      action: 'start_speech_2',
-      energy: '-22 dBFS',
-      vad: 'Speech',
-      pass1: '190ms'
-    },
-    {
-      timeMs: 6800,
-      type: 'partial',
-      tag: 'partial',
-      latency: '195ms',
-      text: '请问预计',
-      timeStr: '14:32:03.350',
-      pass1: '195ms'
-    },
-    {
-      timeMs: 7600,
-      type: 'provisional',
-      tag: 'provisional',
-      latency: 'VAD 350ms',
-      text: '请问预计什么时候发货',
-      timeStr: '14:32:03.820',
-      note: 'FSMN-VAD 切段提交二遍微批队列',
-      vad: 'Endpoint',
-      energy: '-40 dBFS'
-    },
-    {
-      timeMs: 8800,
-      type: 'final',
-      tag: 'final',
-      latency: 'vLLM 580ms · 守卫校验通过',
-      text: '“请问预计什么时候发货？”',
-      timeStr: '14:32:04.420',
-      note: '高准确率标点定稿 · 交付客户端',
-      pass2: '580ms'
-    }
-  ];
+  const WAVE_BAR_COUNT = 36;
+  let waveBars = [];
+  let currentWavePhase = 'idle'; // 'idle' | 'speaking'
+  let waveIntervalId = null;
 
-  const LOOP_TOTAL_TIME = 11500; // 11.5 seconds per full conversation cycle
-  let heroTimeouts = [];
-  let isHeroPaused = false;
-  let waveAnimationInterval = null;
-
-  // Initialize Waveform Bars
   function initWaveform() {
     if (!audioWaveform) return;
     audioWaveform.innerHTML = '';
-    const barCount = 28;
-    for (let i = 0; i < barCount; i++) {
+    waveBars = [];
+    for (let i = 0; i < WAVE_BAR_COUNT; i++) {
       const bar = document.createElement('span');
       bar.className = 'wave-bar';
-      // Default low baseline height
-      bar.style.height = '4px';
+      bar.style.height = isReducedMotion ? '12px' : '4px';
       audioWaveform.appendChild(bar);
+      waveBars.push(bar);
     }
-  }
-
-  // Animate Waveform
-  function setWaveState(state) {
-    if (!audioWaveform || isReducedMotion) return;
-    const bars = audioWaveform.querySelectorAll('.wave-bar');
-    if (state === 'active') {
-      if (!waveAnimationInterval) {
-        waveAnimationInterval = setInterval(() => {
-          bars.forEach((bar, idx) => {
-            // Simulated realistic voice harmonics
-            const base = Math.sin((Date.now() / 120) + (idx * 0.45));
-            const variance = Math.random() * 0.4;
-            const height = Math.max(4, Math.min(22, Math.floor((base + 1.2 + variance) * 8)));
-            bar.style.height = `${height}px`;
-          });
-        }, 80);
-      }
-    } else {
-      if (waveAnimationInterval) {
-        clearInterval(waveAnimationInterval);
-        waveAnimationInterval = null;
-      }
-      bars.forEach(bar => {
-        bar.style.height = '4px';
-      });
-    }
-  }
-
-  // Render a specific log line into the demo terminal
-  function appendDemoEvent(item) {
-    if (!demoEventsContainer) return;
-
-    // Check if an existing line of same sequence can be updated in-place (for incremental partials)
-    let targetRow = null;
-    if (item.type === 'partial') {
-      const lastRow = demoEventsContainer.querySelector('.stream-event-row.streaming-active');
-      if (lastRow && lastRow.dataset.sentence === (item.timeMs < 6000 ? '1' : '2')) {
-        targetRow = lastRow;
-      }
-    }
-
-    if (!targetRow) {
-      targetRow = document.createElement('div');
-      targetRow.className = `stream-event-row stream-type-${item.type} animate-fade-in`;
-      targetRow.dataset.sentence = item.timeMs < 6000 ? '1' : '2';
-      if (item.type === 'partial') {
-        targetRow.classList.add('streaming-active');
-      }
-      demoEventsContainer.appendChild(targetRow);
-    }
-
-    let badgeClass = 'badge-partial';
-    let badgeLabel = 'partial';
-    if (item.type === 'provisional') {
-      badgeClass = 'badge-provisional';
-      badgeLabel = 'provisional';
-      // Deactivate streaming state on last row
-      targetRow.classList.remove('streaming-active');
-    } else if (item.type === 'final') {
-      badgeClass = 'badge-final';
-      badgeLabel = 'final';
-      targetRow.classList.remove('streaming-active');
-    }
-
-    targetRow.innerHTML = `
-      <div class="stream-event-meta">
-        <span class="log-time">${item.timeStr || ''}</span>
-        <span class="event-badge ${badgeClass}">${badgeLabel}</span>
-        <span class="latency-pill">${item.latency}</span>
-        ${item.note ? `<span class="event-note">${item.note}</span>` : ''}
-      </div>
-      <div class="stream-event-text text-${item.type}">
-        ${item.text}
-        ${item.type === 'partial' ? '<span class="typing-cursor"></span>' : ''}
-      </div>
-    `;
-
-    // Keep console scrolled to latest event
-    demoEventsContainer.scrollTop = demoEventsContainer.scrollHeight;
-  }
-
-  // Clear demo console
-  function clearDemoConsole() {
-    if (!demoEventsContainer) return;
-    demoEventsContainer.innerHTML = '';
-  }
-
-  // Run the full demo sequence
-  function startHeroDemoLoop() {
-    // Clear any pending timeouts
-    heroTimeouts.forEach(clearTimeout);
-    heroTimeouts = [];
-
-    clearDemoConsole();
-    setWaveState('inactive');
-
-    if (telemetryPass1) telemetryPass1.textContent = '200~600ms';
-    if (telemetryVad) telemetryVad.textContent = 'Standby';
-    if (telemetryPass2) telemetryPass2.textContent = 'Idle';
-    if (audioEnergyTag) audioEnergyTag.textContent = '-55 dBFS';
 
     if (isReducedMotion) {
-      // Render static completed state directly
-      DEMO_TIMELINE.filter(item => item.type === 'final').forEach(appendDemoEvent);
-      if (telemetryVad) telemetryVad.textContent = 'Connected';
-      if (audioEnergyTag) audioEnergyTag.textContent = '-21 dBFS (Active)';
+      if (audioEnergyTag) audioEnergyTag.textContent = '-52 dBFS';
       return;
     }
 
-    DEMO_TIMELINE.forEach(item => {
-      const timeoutId = setTimeout(() => {
-        if (isHeroPaused) return;
+    if (waveIntervalId) {
+      clearInterval(waveIntervalId);
+    }
 
-        if (item.action === 'start_speech_1' || item.action === 'start_speech_2') {
-          setWaveState('active');
+    waveIntervalId = setInterval(() => {
+      const now = Date.now();
+      if (currentWavePhase === 'speaking') {
+        waveBars.forEach((bar, idx) => {
+          const norm = idx / (WAVE_BAR_COUNT - 1);
+          const envelope = Math.sin(norm * Math.PI);
+          const h1 = Math.sin(now * 0.013 + idx * 0.48);
+          const h2 = Math.cos(now * 0.021 - idx * 0.32);
+          const factor = (h1 + h2 + 2) / 4;
+          const height = Math.max(4, Math.min(26, Math.round(5 + envelope * 18 * factor + Math.random() * 3)));
+          bar.style.height = `${height}px`;
+        });
+        if (audioEnergyTag && Math.random() < 0.28) {
+          const speechDb = ['-20 dBFS', '-22 dBFS', '-19 dBFS', '-24 dBFS', '-21 dBFS'];
+          audioEnergyTag.textContent = speechDb[Math.floor(Math.random() * speechDb.length)];
         }
-        if (item.energy && audioEnergyTag) {
-          audioEnergyTag.textContent = item.energy;
+      } else {
+        const t = now / 320;
+        waveBars.forEach((bar, idx) => {
+          const jitter = Math.sin(t + idx * 0.32) * 1.3;
+          const height = Math.max(3, Math.min(7, Math.round(4 + jitter)));
+          bar.style.height = `${height}px`;
+        });
+        if (audioEnergyTag && Math.random() < 0.12) {
+          const idleDb = ['-51 dBFS', '-52 dBFS', '-53 dBFS'];
+          audioEnergyTag.textContent = idleDb[Math.floor(Math.random() * idleDb.length)];
         }
-        if (item.vad && telemetryVad) {
-          telemetryVad.textContent = item.vad;
-          if (item.vad === 'Endpoint' || item.vad === 'Silence') {
-            setWaveState('inactive');
-          }
-        }
-        if (item.pass1 && telemetryPass1) {
-          telemetryPass1.textContent = item.pass1;
-        }
-        if (item.pass2 && telemetryPass2) {
-          telemetryPass2.textContent = item.pass2;
-        }
+      }
+    }, 60);
+  }
 
-        if (item.type) {
-          appendDemoEvent(item);
-        }
-      }, item.timeMs);
-      heroTimeouts.push(timeoutId);
+  const SPEECH_CHARS = ['今', '今天', '今天天', '今天天气', '今天天气怎', '今天天气怎么', '今天天气怎么样'];
+  const TYPING_LATENCIES = ['205ms', '215ms', '220ms', '230ms', '225ms', '235ms', '245ms'];
+  const TYPING_TIMESTAMPS = [
+    '14:32:01.320',
+    '14:32:01.550',
+    '14:32:01.780',
+    '14:32:02.010',
+    '14:32:02.240',
+    '14:32:02.470',
+    '14:32:02.700'
+  ];
+
+  const HERO_LOOP_DURATION = 11500;
+  let heroTimeouts = [];
+
+  function clearHeroTimeouts() {
+    heroTimeouts.forEach(clearTimeout);
+    heroTimeouts = [];
+  }
+
+  function resetHeroDemo() {
+    clearHeroTimeouts();
+    currentWavePhase = 'idle';
+
+    if (audioEnergyTag) audioEnergyTag.textContent = '-52 dBFS';
+
+    if (telemetryPass1) telemetryPass1.textContent = '200~600ms';
+    if (telemetryPass1Pill) {
+      telemetryPass1Pill.classList.remove('is-active', 'is-busy');
+    }
+
+    if (telemetryVad) telemetryVad.textContent = 'Standby';
+    if (telemetryVadPill) {
+      telemetryVadPill.classList.remove('is-active', 'is-busy');
+    }
+
+    if (telemetryPass2) telemetryPass2.textContent = 'Idle';
+    if (telemetryPass2Pill) {
+      telemetryPass2Pill.classList.remove('is-active', 'is-busy');
+    }
+
+    if (demoResultPanel) {
+      demoResultPanel.className = 'demo-result-panel state-idle';
+    }
+    if (demoResultBadge) {
+      demoResultBadge.className = 'event-badge badge-standby';
+      demoResultBadge.textContent = 'standby';
+    }
+    if (demoResultLatency) {
+      demoResultLatency.textContent = '待命中';
+    }
+    if (demoResultNote) {
+      demoResultNote.textContent = '等待语音推流...';
+    }
+    if (demoResultTime) {
+      demoResultTime.textContent = '14:32:01.000';
+    }
+    if (demoResultText) {
+      demoResultText.className = 'stream-event-text text-partial';
+      demoResultText.classList.remove('text-refresh-flash');
+    }
+    if (demoTextContent) {
+      demoTextContent.textContent = '';
+    }
+    if (demoTypingCursor) {
+      demoTypingCursor.classList.remove('is-hidden');
+    }
+  }
+
+  function startHeroDemoLoop() {
+    resetHeroDemo();
+
+    if (isReducedMotion) {
+      if (demoTextContent) demoTextContent.textContent = '“今天天气怎么样？”';
+      if (demoTypingCursor) demoTypingCursor.classList.add('is-hidden');
+      if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-final';
+      if (demoResultBadge) {
+        demoResultBadge.className = 'event-badge badge-final';
+        demoResultBadge.textContent = 'final';
+      }
+      if (demoResultLatency) demoResultLatency.textContent = 'vLLM 540ms · 守卫校验通过';
+      if (demoResultNote) demoResultNote.textContent = 'Qwen3-ASR 异步定稿 · 标点修正完成';
+      if (demoResultTime) demoResultTime.textContent = '14:32:03.960';
+      if (demoResultText) demoResultText.className = 'stream-event-text text-final';
+      if (telemetryPass1) telemetryPass1.textContent = '200~600ms';
+      if (telemetryVad) telemetryVad.textContent = 'Connected';
+      if (telemetryPass2) telemetryPass2.textContent = '540ms';
+      if (audioEnergyTag) audioEnergyTag.textContent = '-52 dBFS';
+      return;
+    }
+
+    // Step 1: Speech begins & Pass-1 initialization (t = 800ms)
+    heroTimeouts.push(setTimeout(() => {
+      currentWavePhase = 'speaking';
+      if (audioEnergyTag) audioEnergyTag.textContent = '-22 dBFS';
+      if (telemetryVad) telemetryVad.textContent = 'Speech';
+      if (telemetryVadPill) telemetryVadPill.classList.add('is-active');
+      if (telemetryPass1) telemetryPass1.textContent = '210ms';
+      if (telemetryPass1Pill) telemetryPass1Pill.classList.add('is-active');
+
+      if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-partial';
+      if (demoResultBadge) {
+        demoResultBadge.className = 'event-badge badge-partial';
+        demoResultBadge.textContent = 'partial';
+      }
+      if (demoResultLatency) demoResultLatency.textContent = '210ms';
+      if (demoResultNote) demoResultNote.textContent = 'ONNX Paraformer-online 流式推理中';
+      if (demoResultTime) demoResultTime.textContent = '14:32:01.120';
+      if (demoTypingCursor) demoTypingCursor.classList.remove('is-hidden');
+    }, 800));
+
+    // Step 2: Incremental character-by-character typing (t = 1100ms ~ 2780ms)
+    SPEECH_CHARS.forEach((chars, i) => {
+      heroTimeouts.push(setTimeout(() => {
+        if (demoTextContent) demoTextContent.textContent = chars;
+        if (demoResultLatency) demoResultLatency.textContent = TYPING_LATENCIES[i];
+        if (telemetryPass1) telemetryPass1.textContent = TYPING_LATENCIES[i];
+        if (demoResultTime) demoResultTime.textContent = TYPING_TIMESTAMPS[i];
+      }, 1100 + i * 280));
     });
 
-    // Loop trigger
-    const loopTimeout = setTimeout(() => {
-      if (!isHeroPaused) {
-        startHeroDemoLoop();
+    // Step 3: FSMN-VAD Endpoint Cutoff & Provisional Sentence (t = 3500ms)
+    heroTimeouts.push(setTimeout(() => {
+      currentWavePhase = 'idle';
+      if (audioEnergyTag) audioEnergyTag.textContent = '-45 dBFS (Silence)';
+      if (telemetryVad) telemetryVad.textContent = 'Endpoint';
+      if (telemetryVadPill) telemetryVadPill.classList.remove('is-active');
+      if (telemetryPass1Pill) telemetryPass1Pill.classList.remove('is-active');
+
+      if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-provisional';
+      if (demoResultBadge) {
+        demoResultBadge.className = 'event-badge badge-provisional';
+        demoResultBadge.textContent = 'provisional';
       }
-    }, LOOP_TOTAL_TIME);
-    heroTimeouts.push(loopTimeout);
+      if (demoResultLatency) demoResultLatency.textContent = 'VAD 380ms';
+      if (demoResultNote) demoResultNote.textContent = 'FSMN-VAD 检出句尾停顿 · 快速整句先行上屏';
+      if (demoResultText) demoResultText.className = 'stream-event-text text-provisional';
+      if (demoResultTime) demoResultTime.textContent = '14:32:02.980';
+    }, 3500));
+
+    // Step 4: Dispatch to Pass-2 FinalQueue & vLLM Busy (t = 4400ms)
+    heroTimeouts.push(setTimeout(() => {
+      if (telemetryVad) telemetryVad.textContent = 'Silence';
+      if (telemetryPass2) telemetryPass2.textContent = 'vLLM 480ms...';
+      if (telemetryPass2Pill) telemetryPass2Pill.classList.add('is-busy');
+
+      if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-pass2';
+      if (demoResultBadge) {
+        demoResultBadge.className = 'event-badge badge-pass2';
+        demoResultBadge.textContent = 'pass-2';
+      }
+      if (demoResultLatency) demoResultLatency.textContent = 'vLLM 推理中...';
+      if (demoResultNote) demoResultNote.textContent = '提交 FinalQueue · Qwen3-ASR 异步定稿中...';
+      if (demoResultText) demoResultText.className = 'stream-event-text text-pass2';
+      if (demoResultTime) demoResultTime.textContent = '14:32:03.420';
+    }, 4400));
+
+    // Step 5: Pass-2 In-place 回刷 + Refresh Flash (t = 5400ms)
+    heroTimeouts.push(setTimeout(() => {
+      // In-place replacement
+      if (demoTextContent) demoTextContent.textContent = '“今天天气怎么样？”';
+
+      // Trigger refresh flash animation
+      if (demoResultText) {
+        demoResultText.className = 'stream-event-text text-final';
+        demoResultText.classList.remove('text-refresh-flash');
+        void demoResultText.offsetWidth; // Force DOM reflow
+        demoResultText.classList.add('text-refresh-flash');
+      }
+
+      // Hide typing cursor in final state
+      if (demoTypingCursor) demoTypingCursor.classList.add('is-hidden');
+
+      if (demoResultPanel) demoResultPanel.className = 'demo-result-panel state-final';
+      if (demoResultBadge) {
+        demoResultBadge.className = 'event-badge badge-final';
+        demoResultBadge.textContent = 'final';
+      }
+      if (demoResultLatency) demoResultLatency.textContent = 'vLLM 540ms · 守卫校验通过';
+      if (demoResultNote) demoResultNote.textContent = 'Qwen3-ASR 异步定稿完成 · 标点修正完成';
+      if (demoResultTime) demoResultTime.textContent = '14:32:03.960';
+
+      if (telemetryPass2) telemetryPass2.textContent = '540ms';
+      if (telemetryPass2Pill) {
+        telemetryPass2Pill.classList.remove('is-busy');
+        telemetryPass2Pill.classList.add('is-active');
+      }
+    }, 5400));
+
+    // Step 6: Telemetry settling (t = 6800ms)
+    heroTimeouts.push(setTimeout(() => {
+      if (telemetryPass2Pill) telemetryPass2Pill.classList.remove('is-active');
+    }, 6800));
+
+    // Step 7: Auto-loop cycle
+    heroTimeouts.push(setTimeout(() => {
+      startHeroDemoLoop();
+    }, HERO_LOOP_DURATION));
   }
 
   // Replay Button Listener
@@ -486,6 +484,83 @@
 
 
   /* =========================================================================
+     5. Smooth Page Navigation Scroll & Scrollspy (IntersectionObserver)
+     ========================================================================= */
+  function initSmoothScrollAndSpy() {
+    const navLinks = document.querySelectorAll('.site-nav .nav-link');
+    const samePageLinks = document.querySelectorAll('a[href^="#"]');
+
+    // Smooth scroll for same-page anchors
+    samePageLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        if (href === '#' || href === '#top') {
+          e.preventDefault();
+          window.scrollTo({
+            top: 0,
+            behavior: isReducedMotion ? 'auto' : 'smooth'
+          });
+          if (history.pushState) {
+            history.pushState(null, '', ' ');
+          }
+          navLinks.forEach(l => l.classList.remove('is-active'));
+          return;
+        }
+
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({
+            behavior: isReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+          });
+          if (history.pushState) {
+            history.pushState(null, '', href);
+          }
+          if (link.classList.contains('nav-link')) {
+            navLinks.forEach(l => l.classList.remove('is-active'));
+            link.classList.add('is-active');
+          }
+        }
+      });
+    });
+
+    // Nav active link highlight via IntersectionObserver
+    const sections = document.querySelectorAll('section[id]');
+    if (sections.length > 0 && 'IntersectionObserver' in window) {
+      const spyObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            navLinks.forEach(link => {
+              if (link.getAttribute('href') === `#${id}`) {
+                link.classList.add('is-active');
+              } else {
+                link.classList.remove('is-active');
+              }
+            });
+          }
+        });
+      }, {
+        rootMargin: '-75px 0px -55% 0px',
+        threshold: 0.05
+      });
+
+      sections.forEach(sec => spyObserver.observe(sec));
+
+      // Clear active nav items when scrolled back to top
+      window.addEventListener('scroll', () => {
+        if (window.scrollY < 200) {
+          navLinks.forEach(l => l.classList.remove('is-active'));
+        }
+      }, { passive: true });
+    }
+  }
+
+
+  /* =========================================================================
      DOM Ready Bootstrapper
      ========================================================================= */
   document.addEventListener('DOMContentLoaded', () => {
@@ -496,6 +571,7 @@
     initSvgNodeInteractions();
     highlightArchStep(0);
     startArchStepLoop();
+    initSmoothScrollAndSpy();
   });
 
 })();

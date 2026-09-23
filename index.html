@@ -6,7 +6,7 @@
   <meta name="description" content="ASRFlow — 异构 2-Pass 实时语音识别网关。低延迟流式首遍（Paraformer-online / ONNX）+ 高精度异步二遍（Qwen3-ASR / vLLM）。" />
   <title>ASRFlow — 异构 2-Pass 实时语音识别网关</title>
   <link rel="icon" type="image/png" href="assets/logo.png?v=3" />
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <!-- Background Ambience -->
@@ -69,28 +69,6 @@
           </a>
         </div>
 
-        <div class="hero-specs-strip">
-          <div class="spec-item">
-            <span>首遍延迟</span>
-            <strong>200~600ms</strong>
-          </div>
-          <span class="spec-dot"></span>
-          <div class="spec-item">
-            <span>二遍引擎</span>
-            <strong>Qwen3-ASR (vLLM)</strong>
-          </div>
-          <span class="spec-dot"></span>
-          <div class="spec-item">
-            <span>推流协议</span>
-            <strong>WebSocket 16kHz PCM</strong>
-          </div>
-          <span class="spec-dot"></span>
-          <div class="spec-item">
-            <span>调试模式</span>
-            <strong>全 Mock 免 GPU</strong>
-          </div>
-        </div>
-
         <!-- Live Faux Console / Streaming Demo Card -->
         <div class="hero-visual-card">
           <div class="window-header">
@@ -122,21 +100,21 @@
                   <div class="audio-waveform" id="audioWaveform" aria-label="音频流实时频谱模拟">
                     <!-- Dynamic Waveform Bars injected via JS -->
                   </div>
-                  <span class="audio-energy-tag" id="audioEnergyTag">-21 dBFS</span>
+                  <span class="audio-energy-tag" id="audioEnergyTag">-52 dBFS</span>
                 </div>
 
                 <div class="telemetry-group">
-                  <div class="telemetry-pill">
+                  <div class="telemetry-pill" id="telemetryPass1Pill">
                     <span class="indicator-dot cyan"></span>
                     <span>Pass-1: <strong id="telemetryPass1">200~600ms</strong></span>
                   </div>
-                  <div class="telemetry-pill">
+                  <div class="telemetry-pill" id="telemetryVadPill">
                     <span class="indicator-dot emerald"></span>
-                    <span>VAD: <strong id="telemetryVad">Speech</strong></span>
+                    <span>VAD: <strong id="telemetryVad">Standby</strong></span>
                   </div>
-                  <div class="telemetry-pill">
+                  <div class="telemetry-pill" id="telemetryPass2Pill">
                     <span class="indicator-dot purple"></span>
-                    <span>Pass-2: <strong id="telemetryPass2">Qwen3-ASR</strong></span>
+                    <span>Pass-2: <strong id="telemetryPass2">Idle</strong></span>
                   </div>
                 </div>
               </div>
@@ -152,6 +130,19 @@
                   <span class="log-time">14:32:00.820</span>
                   <span class="log-tag tag-sys">SYS</span>
                   <span class="log-msg">Pipeline ready: Pass-1(Paraformer-online ONNX) + Pass-2(vLLM Qwen3-ASR)</span>
+                </div>
+
+                <!-- Live Stream Result Panel (In-place Typing & Pass-2 Refresh) -->
+                <div class="demo-result-panel state-idle" id="demoResultPanel">
+                  <div class="demo-result-meta">
+                    <span class="log-time" id="demoResultTime">14:32:01.000</span>
+                    <span class="event-badge" id="demoResultBadge">standby</span>
+                    <span class="latency-pill" id="demoResultLatency">待命中</span>
+                    <span class="event-note" id="demoResultNote">等待语音推流...</span>
+                  </div>
+                  <div class="stream-event-text text-partial" id="demoResultText">
+                    <span class="stream-text-content" id="demoTextContent"></span><span class="typing-cursor" id="demoTypingCursor"></span>
+                  </div>
                 </div>
 
                 <!-- Live Stream Events Container -->
@@ -915,6 +906,6 @@ pip install -r requirements-base.txt">
   </footer>
 
   <!-- Site Interactions & Animation Controller -->
-  <script src="assets/site.js?v=3" defer></script>
+  <script src="assets/site.js?v=5" defer></script>
 </body>
 </html>
