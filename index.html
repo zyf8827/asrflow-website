@@ -2,155 +2,499 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="ASRFlow — 异构 2-Pass 实时语音识别网关：低延迟流式首遍 + 高精度异步二遍" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ASRFlow — 异构 2-Pass 实时语音识别网关。低延迟流式首遍（Paraformer-online / ONNX）+ 高精度异步二遍（Qwen3-ASR / vLLM）。" />
   <title>ASRFlow — 异构 2-Pass 实时语音识别网关</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="bg-grid" aria-hidden="true"></div>
+  <!-- Background Ambience -->
+  <div class="bg-ambience" aria-hidden="true">
+    <div class="bg-ambience-glow-1"></div>
+    <div class="bg-ambience-glow-2"></div>
+    <div class="bg-ambience-grid"></div>
+  </div>
+
+  <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="#">
-        <img src="assets/logo.png" alt="" width="36" height="36" />
-        <span>ASRFlow</span>
+      <a class="brand" href="#" aria-label="ASRFlow 首页">
+        <img class="brand-logo" src="assets/logo.png" alt="ASRFlow Logo" width="34" height="34" />
+        <span class="brand-name">ASRFlow</span>
       </a>
-      <nav class="nav">
-        <a href="#intro">简介</a>
-        <a href="#features">特性</a>
-        <a href="#architecture">架构</a>
-        <a href="#quickstart">快速开始</a>
-        <a class="nav-github" href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener">GitHub</a>
+      <nav class="site-nav">
+        <a class="nav-link" href="#intro">简介</a>
+        <a class="nav-link" href="#features">特性</a>
+        <a class="nav-link" href="#architecture">架构</a>
+        <a class="nav-link" href="#quickstart">快速开始</a>
+        <a class="nav-cta-github" href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          <span>GitHub</span>
+        </a>
       </nav>
     </div>
   </header>
 
   <main>
+    <!-- Hero Section -->
     <section class="hero">
-      <div class="container hero-inner">
-        <img class="hero-logo" src="assets/logo.png" width="120" height="120" alt="ASRFlow logo" />
-        <h1>ASRFlow</h1>
-        <p class="tagline">异构 2-Pass 实时语音识别网关</p>
-        <p class="subtag">低延迟流式首遍 + 高精度异步二遍</p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener">GitHub 仓库</a>
-          <a class="btn btn-ghost" href="https://github.com/zyf8827/ASRFlow#快速开始" target="_blank" rel="noopener">快速开始</a>
-        </div>
-        <div class="hero-visual">
-          <img src="assets/hero.png" alt="ASRFlow 产品示意" />
-        </div>
-      </div>
-    </section>
-
-    <section id="intro" class="section">
-      <div class="container narrow">
-        <h2>产品简介</h2>
-        <p>
-          ASRFlow 是一个异构两阶段（2-Pass）实时语音识别网关。客户端通过单个 WebSocket 长连接持续推送 16kHz PCM 音频流并接收识别事件。网关将识别流水线划分为两遍：首遍（Pass-1）基于 ONNX Runtime 运行流式 Paraformer-online，输出 200~600ms 低延迟中间字（<code>partial</code>）并在 VAD 断句时产出快速整句（<code>provisional</code>）；二遍（Pass-2）在断句后异步调用独立部署的 Qwen3-ASR vLLM 服务，输出带标点的高精度定稿文本（<code>final</code>）。
-        </p>
-        <p>
-          在长时间流式会话中，流式模型常面临近零静音/底噪环境下的偶发孤立 Token 吐字、时间戳漂移以及下游重复拼接退化等问题。ASRFlow 通过分层退化防护（近零静音过滤、VAD 状态门控、超时看门狗及二遍一致性校验），在保持低延迟交互体验的同时，拦截异常字符积累。
-        </p>
-        <p>
-          服务采用解耦架构：网关自身不绑定重型推理框架，通过 HTTP 接口与独立部署的 vLLM 通信；首遍引擎支持多路并发动态合批，内置断线重连（<code>resume</code> 会话缓存）、动态热词偏置、说话人识别与逆文本正则化（ITN），并提供开箱即用的全 Mock 运行模式，本地无需 GPU 与模型权重即可调试全链路。
-        </p>
-      </div>
-    </section>
-
-    <section id="features" class="section section-alt">
       <div class="container">
-        <h2>核心特性</h2>
-        <div class="feature-grid">
-          <article class="card">
-            <div class="card-icon">①</div>
-            <h3>异构 2-Pass 流水线</h3>
-            <p>首遍 Paraformer-online（ONNX）提供 200~600ms 快速反馈（partial / provisional），二遍异步调用独立 Qwen3-ASR（vLLM）输出高精度标点定稿（final）。</p>
+        <div class="hero-badge-wrap">
+          <span class="badge-pulse"></span>
+          <span class="badge-text">开源实时语音识别网关 · Apache-2.0</span>
+        </div>
+
+        <div class="hero-logo-box">
+          <img class="hero-logo" src="assets/logo.png" alt="ASRFlow Logo" width="112" height="112" />
+        </div>
+
+        <h1 class="hero-title">ASRFlow</h1>
+        <p class="hero-tagline">异构 2-Pass 实时语音识别网关</p>
+        <p class="hero-subtitle">低延迟流式首遍 + 高精度异步二遍</p>
+
+        <div class="hero-cta-group">
+          <a class="btn btn-primary" href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            <span>GitHub 仓库</span>
+          </a>
+          <a class="btn btn-secondary" href="https://github.com/zyf8827/ASRFlow#快速开始" target="_blank" rel="noopener noreferrer">
+            <span>快速开始</span>
+          </a>
+        </div>
+
+        <div class="hero-specs-strip">
+          <div class="spec-item">
+            <span>首遍延迟</span>
+            <strong>200~600ms</strong>
+          </div>
+          <span class="spec-dot"></span>
+          <div class="spec-item">
+            <span>二遍引擎</span>
+            <strong>Qwen3-ASR (vLLM)</strong>
+          </div>
+          <span class="spec-dot"></span>
+          <div class="spec-item">
+            <span>推流协议</span>
+            <strong>WebSocket 16kHz PCM</strong>
+          </div>
+          <span class="spec-dot"></span>
+          <div class="spec-item">
+            <span>调试模式</span>
+            <strong>全 Mock 免 GPU</strong>
+          </div>
+        </div>
+
+        <div class="hero-visual-card">
+          <div class="window-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="window-title">asrflow // 2-pass streaming gateway demo</span>
+          </div>
+          <img class="hero-visual-img" src="assets/hero.png" alt="ASRFlow 实时交互演示界面" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Introduction -->
+    <section id="intro" class="section section-alt">
+      <div class="container-narrow">
+        <div class="section-head">
+          <span class="section-kicker">About ASRFlow</span>
+          <h2 class="section-title">产品简介</h2>
+          <p class="section-lead">面向低延迟与高准确率兼顾场景的解耦型实时语音识别网关。</p>
+        </div>
+
+        <div class="intro-content">
+          <p>
+            <strong>ASRFlow</strong> 是一个异构两阶段（2-Pass）实时语音识别网关。客户端通过单个 WebSocket 长连接持续推送 16kHz PCM 音频流并接收识别事件。网关将识别流水线划分为两遍：首遍（Pass-1）基于 ONNX Runtime 运行流式 Paraformer-online，输出 200~600ms 低延迟中间字（<code>partial</code>）并在 VAD 断句时产出快速整句（<code>provisional</code>）；二遍（Pass-2）在断句后异步调用独立部署的 Qwen3-ASR vLLM 服务，输出带标点的高精度定稿文本（<code>final</code>）。
+          </p>
+          <p>
+            在长时间流式会话中，流式模型常面临近零静音/底噪环境下的偶发孤立 Token 吐字、时间戳漂移以及下游重复拼接退化等问题。ASRFlow 通过分层退化防护（近零静音过滤、VAD 状态门控、超时看门狗及二遍一致性校验），在保持低延迟交互体验的同时，拦截异常字符积累。
+          </p>
+          <p>
+            服务采用解耦架构：网关自身不绑定重型推理框架，通过 HTTP 接口与独立部署的 vLLM 通信；首遍引擎支持多路并发动态合批，内置断线重连（<code>resume</code> 会话缓存）、动态热词偏置、说话人识别与逆文本正则化（ITN），并提供开箱即用的全 Mock 运行模式，本地无需 GPU 与模型权重即可调试全链路。
+          </p>
+        </div>
+
+        <div class="pipeline-pillars">
+          <div class="pillar-card">
+            <div class="pillar-step">Stage 01</div>
+            <h4 class="pillar-title">单连接推流</h4>
+            <p class="pillar-desc">单个 WebSocket 承载 16kHz PCM 音频 Binary 帧与 JSON Text 控制信令。</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-step">Stage 02</div>
+            <h4 class="pillar-title">首遍低延迟</h4>
+            <p class="pillar-desc">ONNX Runtime Paraformer-online 输出 200~600ms 增量中间字 partial。</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-step">Stage 03</div>
+            <h4 class="pillar-title">二遍定稿</h4>
+            <p class="pillar-desc">断句后异步调用独立部署的 Qwen3-ASR vLLM，产出带标点 final 文本。</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-step">Stage 04</div>
+            <h4 class="pillar-title">分层防退化</h4>
+            <p class="pillar-desc">L0 静音过滤 + L1 VAD 锁存 + L2 看门狗与 Consistency Guard 一致性守卫。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Features -->
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker">Core Features</span>
+          <h2 class="section-title">核心特性</h2>
+          <p class="section-lead">针对实时语音交互的流式低延迟、并发吞吐与长会话稳定性设计。</p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Card 1 -->
+          <article class="feature-card">
+            <div class="card-top">
+              <div class="card-icon-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 6h16M4 12h10M4 18h16" />
+                </svg>
+              </div>
+              <span class="card-number">01</span>
+            </div>
+            <h3 class="card-title">异构 2-Pass 流水线</h3>
+            <p class="card-body">
+              首遍 Paraformer-online（ONNX Runtime）提供 200~600ms 快速反馈（<code>partial</code> / <code>provisional</code>），二遍异步调用独立部署的 Qwen3-ASR（vLLM）输出高精度标点定稿（<code>final</code>）。
+            </p>
+            <div class="card-tags">
+              <span class="tag-pill">ONNX Runtime</span>
+              <span class="tag-pill">Qwen3-ASR</span>
+              <span class="tag-pill">vLLM</span>
+            </div>
           </article>
-          <article class="card">
-            <div class="card-icon">②</div>
-            <h3>首遍动态多路合批</h3>
-            <p>流式引擎支持多路并发连接在动态时间窗口内组批推理，兼顾吞吐与低时延。</p>
+
+          <!-- Card 2 -->
+          <article class="feature-card">
+            <div class="card-top">
+              <div class="card-icon-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                  <line x1="10" y1="4" x2="10" y2="20" />
+                </svg>
+              </div>
+              <span class="card-number">02</span>
+            </div>
+            <h3 class="card-title">首遍动态多路合批</h3>
+            <p class="card-body">
+              流式引擎支持多路并发 WebSocket 连接在动态时间窗口内组批推理，显著提升 GPU / CPU 吞吐利用率，同时兼顾单连接低时延交互体验。
+            </p>
+            <div class="card-tags">
+              <span class="tag-pill">Dynamic Batching</span>
+              <span class="tag-pill">多路并发</span>
+              <span class="tag-pill">吞吐优化</span>
+            </div>
           </article>
-          <article class="card">
-            <div class="card-icon">③</div>
-            <h3>分层流式防退化</h3>
-            <p>近零静音过滤、VAD 状态门控、超时看门狗与 Consistency Guard，拦截孤立 Token、时间戳漂移与幻觉积累。</p>
+
+          <!-- Card 3 -->
+          <article class="feature-card">
+            <div class="card-top">
+              <div class="card-icon-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+              </div>
+              <span class="card-number">03</span>
+            </div>
+            <h3 class="card-title">分层流式防退化</h3>
+            <p class="card-body">
+              L0 近零静音（&lt;-80 dBFS）过滤偶发 Token；L1 VAD 未起段抑制并锁存起始时间戳防漂移；L2 超时看门狗切段送二遍裁决，配合 Consistency Guard 校验防幻觉积累。
+            </p>
+            <div class="card-tags">
+              <span class="tag-pill">L0/L1/L2 防护</span>
+              <span class="tag-pill">Consistency Guard</span>
+              <span class="tag-pill">防漂移</span>
+            </div>
           </article>
-          <article class="card">
-            <div class="card-icon">④</div>
-            <h3>架构完全解耦</h3>
-            <p>二遍模型经 HTTP 调用独立 vLLM 进程，网关依赖轻量，vLLM 不进入服务依赖树。</p>
+
+          <!-- Card 4 -->
+          <article class="feature-card">
+            <div class="card-top">
+              <div class="card-icon-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="8" rx="2" />
+                  <rect x="2" y="14" width="20" height="8" rx="2" />
+                  <line x1="6" y1="6" x2="6.01" y2="6" />
+                  <line x1="6" y1="18" x2="6.01" y2="18" />
+                </svg>
+              </div>
+              <span class="card-number">04</span>
+            </div>
+            <h3 class="card-title">架构完全解耦</h3>
+            <p class="card-body">
+              二遍模型通过标准 HTTP 接口解耦调用独立部署的 vLLM 进程。网关轻量纯粹，vLLM 不进入网关依赖树，便于前后级独立调度、异构部署与伸缩。
+            </p>
+            <div class="card-tags">
+              <span class="tag-pill">HTTP 解耦</span>
+              <span class="tag-pill">轻量依赖</span>
+              <span class="tag-pill">独立扩缩</span>
+            </div>
           </article>
-          <article class="card">
-            <div class="card-icon">⑤</div>
-            <h3>会话管理与掉线恢复</h3>
-            <p>基于 session_id 的断线重连与 resume 会话缓存；支持客户端 commit 信令强制切句。</p>
+
+          <!-- Card 5 -->
+          <article class="feature-card">
+            <div class="card-top">
+              <div class="card-icon-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <polyline points="23 4 23 10 17 10" />
+                  <polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+              </div>
+              <span class="card-number">05</span>
+            </div>
+            <h3 class="card-title">会话管理与掉线恢复</h3>
+            <p class="card-body">
+              支持基于 <code>session_id</code> 的客户端断线重连与状态恢复（<code>resume</code> 会话缓存机制）；支持客户端主动发送 <code>commit</code> 信令强制切句提交。
+            </p>
+            <div class="card-tags">
+              <span class="tag-pill">Resume 缓存</span>
+              <span class="tag-pill">Commit 信令</span>
+              <span class="tag-pill">状态锁存</span>
+            </div>
           </article>
-          <article class="card">
-            <div class="card-icon">⑥</div>
-            <h3>Mock 调试开箱即用</h3>
-            <p>全 Mock 引擎无需 GPU 与模型权重即可走通 WebSocket 推流与识别链路；另含热词、说话人识别、ITN 与健康探针。</p>
+
+          <!-- Card 6 -->
+          <article class="feature-card">
+            <div class="card-top">
+              <div class="card-icon-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <polyline points="4 17 10 11 4 5" />
+                  <line x1="12" y1="19" x2="20" y2="19" />
+                </svg>
+              </div>
+              <span class="card-number">06</span>
+            </div>
+            <h3 class="card-title">Mock 调试与观测探针</h3>
+            <p class="card-body">
+              内置全套 Mock 引擎，本地无需 GPU 与模型权重即可体验推流与识别；另支持动态热词偏置、CAM++ 说话人识别、ITN，以及 <code>/healthz</code> 与 Prometheus <code>/metrics</code>。
+            </p>
+            <div class="card-tags">
+              <span class="tag-pill">Mock 调试</span>
+              <span class="tag-pill">Prometheus</span>
+              <span class="tag-pill">动态热词</span>
+            </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section id="architecture" class="section">
+    <!-- Architecture Overview -->
+    <section id="architecture" class="section section-alt">
       <div class="container">
-        <h2>架构概览</h2>
-        <figure class="arch-figure">
-          <img src="assets/architecture.png" alt="ASRFlow 系统架构图" />
-          <figcaption>WebSocket 网关 · 首遍流式引擎 · 二遍 vLLM · VAD / 说话人 / 防退化守卫</figcaption>
-        </figure>
+        <div class="section-head">
+          <span class="section-kicker">Architecture</span>
+          <h2 class="section-title">系统架构</h2>
+          <p class="section-lead">清晰的模块分层与解耦数据流：WebSocket 接入、首遍合批推理、二遍异步定稿与守卫防护。</p>
+        </div>
+
+        <div class="arch-card">
+          <div class="window-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="window-title">docs/assets/architecture.png · ASRFlow Topology</span>
+          </div>
+          <figure class="arch-figure">
+            <div class="arch-image-wrap">
+              <img class="arch-image" src="assets/architecture.png" alt="ASRFlow 系统端到端架构拓扑图" />
+            </div>
+            <figcaption class="arch-caption">
+              <div class="arch-caption-text">
+                <strong>拓扑概览：</strong>WebSocket 网关 · 首遍流式引擎 · 二遍 vLLM · VAD / 说话人 / 防退化守卫
+              </div>
+              <div class="arch-links">
+                <a class="arch-link-item" href="assets/architecture.svg" target="_blank" rel="noopener noreferrer">
+                  <span>查看 SVG 矢量图</span>
+                  <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
+                </a>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="arch-chips-grid">
+          <div class="arch-chip">
+            <h4 class="arch-chip-title"><span class="chip-indicator"></span>网关接入层</h4>
+            <p class="arch-chip-desc">WebSocket 会话管理、单连接 PCM 音频分帧与控制信令解析、HTTP 探针。</p>
+          </div>
+          <div class="arch-chip">
+            <h4 class="arch-chip-title"><span class="chip-indicator"></span>首遍流式流水线</h4>
+            <p class="arch-chip-desc">FSMN-VAD 起止判决、ONNX Runtime Paraformer-online 多路动态合批推理。</p>
+          </div>
+          <div class="arch-chip">
+            <h4 class="arch-chip-title"><span class="chip-indicator"></span>二遍与辅助生态</h4>
+            <p class="arch-chip-desc">独立 vLLM Qwen3-ASR HTTP 服务、CAM++ 说话人识别、ITN 正则化与守卫。</p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="quickstart" class="section section-alt">
-      <div class="container narrow">
-        <h2>快速开始</h2>
-        <p>Python ≥ 3.10。无需下载模型权重即可体验完整 WebSocket 推流与识别链路：</p>
-        <pre class="code-block"><code># 克隆仓库
-git clone https://github.com/zyf8827/asrflow.git
+    <!-- Quickstart -->
+    <section id="quickstart" class="section">
+      <div class="container-narrow">
+        <div class="section-head">
+          <span class="section-kicker">Quickstart</span>
+          <h2 class="section-title">快速开始</h2>
+          <p class="section-lead">环境准备：Python ≥ 3.10。无需下载模型权重即可体验完整推流与识别全链路。</p>
+        </div>
+
+        <div class="quickstart-wrapper">
+          <div class="qs-intro-bar">
+            <span class="qs-badge">本地全 Mock 运行模式（推荐）</span>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">零 GPU 依赖 · 秒级启动</span>
+          </div>
+
+          <h3 class="qs-step-title">
+            <span class="qs-step-num">1</span>
+            <span>克隆仓库并安装基础依赖</span>
+          </h3>
+          <div class="code-container">
+            <div class="code-header">
+              <span class="code-lang-label">bash</span>
+              <button class="copy-btn" type="button" data-code="git clone https://github.com/zyf8827/asrflow.git
 cd asrflow
+pip install -r requirements-base.txt">
+                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>复制</span>
+              </button>
+            </div>
+            <pre class="code-block"><code><span class="comment"># 克隆仓库</span>
+<span class="cmd">git clone</span> https://github.com/zyf8827/asrflow.git
+<span class="cmd">cd</span> asrflow
 
-# 安装最小基础依赖
-pip install -r requirements-base.txt
+<span class="comment"># 安装最小基础依赖</span>
+<span class="cmd">pip install</span> -r requirements-base.txt</code></pre>
+          </div>
 
-# 启动全 Mock 网关
-python3 main.py \
+          <h3 class="qs-step-title">
+            <span class="qs-step-num">2</span>
+            <span>启动全 Mock 网关服务</span>
+          </h3>
+          <div class="code-container">
+            <div class="code-header">
+              <span class="code-lang-label">bash</span>
+              <button class="copy-btn" type="button" data-code="python3 main.py \
   --port 10095 \
   --http_port 10096 \
   --streaming_backend mock \
   --final_backend mock \
   --vad_backend mock \
-  --speaker_backend mock</code></pre>
-        <p class="qs-note">
-          完整真实模型部署、Docker 编排与客户端协议说明见
-          <a href="https://github.com/zyf8827/ASRFlow#快速开始" target="_blank" rel="noopener">GitHub README</a>。
-        </p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener">查看完整文档</a>
+  --speaker_backend mock">
+                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>复制</span>
+              </button>
+            </div>
+            <pre class="code-block"><code><span class="comment"># 启动全 Mock 网关（监听 WebSocket 10095 / HTTP 10096）</span>
+<span class="cmd">python3 main.py</span> \
+  <span class="flag">--port</span> <span class="val">10095</span> \
+  <span class="flag">--http_port</span> <span class="val">10096</span> \
+  <span class="flag">--streaming_backend</span> <span class="val">mock</span> \
+  <span class="flag">--final_backend</span> <span class="val">mock</span> \
+  <span class="flag">--vad_backend</span> <span class="val">mock</span> \
+  <span class="flag">--speaker_backend</span> <span class="val">mock</span></code></pre>
+          </div>
+
+          <h3 class="qs-step-title">
+            <span class="qs-step-num">3</span>
+            <span>在另一个终端使用内置客户端推流</span>
+          </h3>
+          <div class="code-container">
+            <div class="code-header">
+              <span class="code-lang-label">bash</span>
+              <button class="copy-btn" type="button" data-code="python3 demo/console_client.py \
+  --uri ws://127.0.0.1:10095 \
+  --audio fixtures/sample_16k.wav \
+  --full">
+                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>复制</span>
+              </button>
+            </div>
+            <pre class="code-block"><code><span class="comment"># 发送测试音频并接收流式 partial / provisional / final 识别事件</span>
+<span class="cmd">python3 demo/console_client.py</span> \
+  <span class="flag">--uri</span> <span class="val">ws://127.0.0.1:10095</span> \
+  <span class="flag">--audio</span> <span class="val">fixtures/sample_16k.wav</span> \
+  <span class="flag">--full</span></code></pre>
+          </div>
+
+          <div class="qs-footer-callout">
+            <div class="callout-text">
+              真实 Qwen3-ASR（vLLM）服务部署、首遍 ONNX 图导出、Docker Compose 编排及 WebSocket 协议详见主仓文档。
+            </div>
+            <a class="btn btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.88rem;" href="https://github.com/zyf8827/ASRFlow#快速开始" target="_blank" rel="noopener noreferrer">
+              查看 GitHub 完整文档
+            </a>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <img src="assets/logo.png" alt="" width="28" height="28" />
-        <span>ASRFlow</span>
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="ASRFlow Logo" width="28" height="28" />
+          <span>ASRFlow</span>
+          <span class="license-pill">Apache-2.0</span>
+        </div>
+        <div class="footer-links-row">
+          <a class="footer-link" href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener noreferrer">产品主仓库</a>
+          <a class="footer-link" href="https://github.com/zyf8827/asrflow-website" target="_blank" rel="noopener noreferrer">本站源码仓</a>
+          <a class="footer-link" href="https://github.com/zyf8827/ASRFlow/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">许可证</a>
+          <a class="footer-link" href="#quickstart">快速开始</a>
+          <a class="footer-link" href="#">返回顶部</a>
+        </div>
       </div>
-      <p class="footer-links">
-        <a href="https://github.com/zyf8827/ASRFlow" target="_blank" rel="noopener">产品仓库</a>
-        <span>·</span>
-        <a href="https://github.com/zyf8827/asrflow-website" target="_blank" rel="noopener">本站源码</a>
-        <span>·</span>
-        <a href="https://github.com/zyf8827/ASRFlow/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0</a>
-      </p>
-      <p class="footer-copy">开源个人项目 · 介绍站由 GitHub Pages 托管</p>
+      <div class="footer-bottom">
+        <p class="footer-note">
+          开源个人项目 · 官方介绍站由 GitHub Pages 托管发布
+        </p>
+        <p class="footer-note">
+          © 2026 ASRFlow Maintainers. All rights reserved.
+        </p>
+      </div>
     </div>
   </footer>
+
+  <!-- Vanilla Clipboard Utility -->
+  <script>
+    document.querySelectorAll('.copy-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        const code = button.getAttribute('data-code');
+        if (!code) return;
+        try {
+          await navigator.clipboard.writeText(code);
+          const span = button.querySelector('span');
+          const originalText = span.textContent;
+          button.classList.add('copied');
+          span.textContent = '已复制';
+          setTimeout(() => {
+            button.classList.remove('copied');
+            span.textContent = originalText;
+          }, 2000);
+        } catch (err) {
+          console.warn('Clipboard write failed:', err);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
