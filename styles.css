@@ -896,7 +896,7 @@ code {
 }
 
 .stream-event-text {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   line-height: 1.5;
   color: var(--text-primary);
   font-family: var(--font-sans);
