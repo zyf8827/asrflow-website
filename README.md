@@ -41,10 +41,7 @@ asrflow-website/
 ├── index.html                  # 单页营销官网主文件（自包含语义结构与交互）
 ├── styles.css                  # 深色现代主题样式（响应式、渐变光效、微交互）
 ├── assets/                     # 官方素材与动效脚本
-│   ├── logo.png                # ASRFlow Logo
-│   ├── hero.png                # Hero 区域控制台原图素材
-│   ├── architecture.png        # 系统端到端静态拓扑原图
-│   ├── architecture.svg        # 系统端到端矢量原图
+│   ├── logo.png                # ASRFlow Logo（透明底 RGBA PNG）
 │   ├── architecture-flow.svg   # 2-Pass 数据流向动态矢量图
 │   └── site.js                 # 交互控制器（流式演示、拓扑动效、滚动显隐）
 ├── .nojekyll                   # GitHub Pages Jekyll 忽略标识（空文件）

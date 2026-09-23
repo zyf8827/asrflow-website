@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="ASRFlow — 异构 2-Pass 实时语音识别网关。低延迟流式首遍（Paraformer-online / ONNX）+ 高精度异步二遍（Qwen3-ASR / vLLM）。" />
   <title>ASRFlow — 异构 2-Pass 实时语音识别网关</title>
-  <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="icon" type="image/png" href="assets/logo.png?v=3" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <!-- Background Ambience -->
@@ -20,7 +20,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="#" aria-label="ASRFlow 首页">
-        <img class="brand-logo" src="assets/logo.png" alt="ASRFlow Logo" width="34" height="34" />
+        <img class="brand-logo" src="assets/logo.png?v=3" alt="ASRFlow Logo" width="34" height="34" />
         <span class="brand-name">ASRFlow</span>
       </a>
       <nav class="site-nav">
@@ -42,13 +42,15 @@
     <!-- Hero Section -->
     <section class="hero">
       <div class="container">
-        <div class="hero-badge-wrap">
-          <span class="badge-pulse"></span>
-          <span class="badge-text">开源实时语音识别网关 · Apache-2.0</span>
-        </div>
+        <div class="hero-badge-logo-wrap">
+          <div class="hero-badge-wrap">
+            <span class="badge-pulse"></span>
+            <span class="badge-text">开源实时语音识别网关 · Apache-2.0</span>
+          </div>
 
-        <div class="hero-logo-box">
-          <img class="hero-logo" src="assets/logo.png" alt="ASRFlow Logo" width="112" height="112" />
+          <div class="hero-logo-box">
+            <img class="hero-logo" src="assets/logo.png?v=3" alt="ASRFlow Logo" width="112" height="112" />
+          </div>
         </div>
 
         <h1 class="hero-title">ASRFlow</h1>
@@ -100,10 +102,6 @@
             </div>
             <div class="window-actions">
               <span class="stream-live-pill"><span class="pulse-dot"></span>LIVE · 16kHz PCM</span>
-              <div class="hero-view-toggle" role="tablist" aria-label="Hero 界面视图切换">
-                <button class="hero-toggle-btn active" id="heroTabLive" type="button" role="tab" aria-selected="true">实时流式演示</button>
-                <button class="hero-toggle-btn" id="heroTabStatic" type="button" role="tab" aria-selected="false">控制台原图</button>
-              </div>
             </div>
           </div>
 
@@ -183,11 +181,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Static Original Screenshot View (Secondary Toggle) -->
-            <div class="hero-static-panel" id="heroStaticPanel" style="display: none;">
-              <img class="hero-visual-img" src="assets/hero.png" alt="ASRFlow 实时交互演示界面控制台截图" />
-            </div>
           </div>
         </div>
       </div>
@@ -199,19 +192,15 @@
         <div class="section-head reveal-on-scroll">
           <span class="section-kicker">About ASRFlow</span>
           <h2 class="section-title">产品简介</h2>
-          <p class="section-lead">面向低延迟与高准确率兼顾场景的解耦型实时语音识别网关。</p>
+          <p class="section-lead">低延迟与高准确率兼顾的解耦型实时 ASR 网关。</p>
         </div>
 
         <div class="intro-content reveal-on-scroll">
-          <p>
-            <strong>ASRFlow</strong> 是一个异构两阶段（2-Pass）实时语音识别网关。客户端通过单个 WebSocket 长连接持续推送 16kHz PCM 音频流并接收识别事件。网关将识别流水线划分为两遍：首遍（Pass-1）基于 ONNX Runtime 运行流式 Paraformer-online，输出 200~600ms 低延迟中间字（<code>partial</code>）并在 VAD 断句时产出快速整句（<code>provisional</code>）；二遍（Pass-2）在断句后异步调用独立部署的 Qwen3-ASR vLLM 服务，输出带标点的高精度定稿文本（<code>final</code>）。
-          </p>
-          <p>
-            在长时间流式会话中，流式模型常面临近零静音/底噪环境下的偶发孤立 Token 吐字、时间戳漂移以及下游重复拼接退化等问题。ASRFlow 通过分层退化防护（近零静音过滤、VAD 状态门控、超时看门狗及二遍一致性校验），在保持低延迟交互体验的同时，拦截异常字符积累。
-          </p>
-          <p>
-            服务采用解耦架构：网关自身不绑定重型推理框架，通过 HTTP 接口与独立部署的 vLLM 通信；首遍引擎支持多路并发动态合批，内置断线重连（<code>resume</code> 会话缓存）、动态热词偏置、说话人识别与逆文本正则化（ITN），并提供开箱即用的全 Mock 运行模式，本地无需 GPU 与模型权重即可调试全链路。
-          </p>
+          <ul class="intro-bullets">
+            <li><strong>ASRFlow</strong>：WebSocket 推 16kHz PCM，异构 2-Pass 实时 ASR 网关。</li>
+            <li>首遍 ONNX 流式低延迟（<code>partial</code> / <code>provisional</code>），二遍异步 vLLM 高精度定稿（<code>final</code>）。</li>
+            <li>网关与推理解耦，内置分层防退化，支持全 Mock 免 GPU 跑通链路。</li>
+          </ul>
         </div>
 
         <div class="pipeline-pillars">
@@ -410,10 +399,6 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                 <span>暂停动效</span>
               </button>
-              <div class="arch-view-controls" role="tablist" aria-label="架构视图切换">
-                <button class="arch-btn-toggle active" id="archTabFlow" type="button" role="tab" aria-selected="true">动态流向演示</button>
-                <button class="arch-btn-toggle" id="archTabStatic" type="button" role="tab" aria-selected="false">静态拓扑原图</button>
-              </div>
             </div>
           </div>
 
@@ -770,29 +755,12 @@
             </div>
           </div>
 
-          <!-- Secondary View: Static Topology Image -->
-          <div class="arch-static-stage" id="archStaticStage" style="display: none;">
-            <figure class="arch-figure">
-              <div class="arch-image-wrap">
-                <img class="arch-image" src="assets/architecture.png" alt="ASRFlow 系统端到端架构拓扑图" />
-              </div>
-            </figure>
-          </div>
-
           <!-- Architecture Card Caption & Links -->
           <div class="arch-caption">
             <div class="arch-caption-text">
               <strong>2-Pass 流向：</strong>Client (WebSocket PCM) → Gateway → Pass-1 (Paraformer ONNX) partial/provisional → VAD 切句 → Pass-2 (Qwen3-ASR vLLM) final → Client
             </div>
             <div class="arch-links">
-              <a class="arch-link-item" href="assets/architecture.png" target="_blank" rel="noopener noreferrer">
-                <span>查看架构原图 (PNG)</span>
-                <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
-              </a>
-              <a class="arch-link-item" href="assets/architecture.svg" target="_blank" rel="noopener noreferrer">
-                <span>查看矢量原图 (SVG)</span>
-                <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
-              </a>
               <a class="arch-link-item" href="assets/architecture-flow.svg" target="_blank" rel="noopener noreferrer">
                 <span>独立动态流图 (SVG)</span>
                 <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
@@ -923,7 +891,7 @@ pip install -r requirements-base.txt">
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <img src="assets/logo.png" alt="ASRFlow Logo" width="28" height="28" />
+          <img src="assets/logo.png?v=3" alt="ASRFlow Logo" width="28" height="28" />
           <span>ASRFlow</span>
           <span class="license-pill">Apache-2.0</span>
         </div>
@@ -947,6 +915,6 @@ pip install -r requirements-base.txt">
   </footer>
 
   <!-- Site Interactions & Animation Controller -->
-  <script src="assets/site.js?v=2" defer></script>
+  <script src="assets/site.js?v=3" defer></script>
 </body>
 </html>

@@ -23,9 +23,6 @@
   const telemetryPass2 = document.getElementById('telemetryPass2');
   const audioEnergyTag = document.getElementById('audioEnergyTag');
   const demoReplayBtn = document.getElementById('demoReplayBtn');
-  const heroTabLive = document.getElementById('heroTabLive');
-  const heroTabStatic = document.getElementById('heroTabStatic');
-  const heroStaticPanel = document.getElementById('heroStaticPanel');
 
   // Scripted events for the 2-Pass live stream simulation
   const DEMO_TIMELINE = [
@@ -305,40 +302,9 @@
     });
   }
 
-  // View Tab Switcher: Live Demo vs Screenshot
-  if (heroTabLive && heroTabStatic && heroStaticPanel && heroDemoContainer) {
-    heroTabLive.addEventListener('click', () => {
-      heroTabLive.classList.add('active');
-      heroTabLive.setAttribute('aria-selected', 'true');
-      heroTabStatic.classList.remove('active');
-      heroTabStatic.setAttribute('aria-selected', 'false');
-
-      heroDemoContainer.style.display = 'block';
-      heroStaticPanel.style.display = 'none';
-      startHeroDemoLoop();
-    });
-
-    heroTabStatic.addEventListener('click', () => {
-      heroTabStatic.classList.add('active');
-      heroTabStatic.setAttribute('aria-selected', 'true');
-      heroTabLive.classList.remove('active');
-      heroTabLive.setAttribute('aria-selected', 'false');
-
-      heroDemoContainer.style.display = 'none';
-      heroStaticPanel.style.display = 'block';
-      heroTimeouts.forEach(clearTimeout);
-      setWaveState('inactive');
-    });
-  }
-
-
   /* =========================================================================
      2. Interactive Architecture Diagram Controller
      ========================================================================= */
-  const archFlowStage = document.getElementById('archFlowStage');
-  const archStaticStage = document.getElementById('archStaticStage');
-  const archTabFlow = document.getElementById('archTabFlow');
-  const archTabStatic = document.getElementById('archTabStatic');
   const archPlayPauseBtn = document.getElementById('archPlayPauseBtn');
   const archStepIndicator = document.getElementById('archStepIndicator');
   const archInspector = document.getElementById('archInspector');
@@ -443,29 +409,6 @@
           <span>继续播放</span>
         `;
       }
-    });
-  }
-
-  // Architecture Tab Switcher: Dynamic Flow vs Static Topology
-  if (archTabFlow && archTabStatic && archFlowStage && archStaticStage) {
-    archTabFlow.addEventListener('click', () => {
-      archTabFlow.classList.add('active');
-      archTabFlow.setAttribute('aria-selected', 'true');
-      archTabStatic.classList.remove('active');
-      archTabStatic.setAttribute('aria-selected', 'false');
-
-      archFlowStage.style.display = 'block';
-      archStaticStage.style.display = 'none';
-    });
-
-    archTabStatic.addEventListener('click', () => {
-      archTabStatic.classList.add('active');
-      archTabStatic.setAttribute('aria-selected', 'true');
-      archTabFlow.classList.remove('active');
-      archTabFlow.setAttribute('aria-selected', 'false');
-
-      archFlowStage.style.display = 'none';
-      archStaticStage.style.display = 'block';
     });
   }
 

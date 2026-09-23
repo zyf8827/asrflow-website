@@ -205,9 +205,8 @@ code {
 }
 
 .brand-logo {
-  border-radius: 9px;
   display: block;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 .brand-name {
@@ -269,6 +268,13 @@ code {
   position: relative;
 }
 
+.hero-badge-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 .hero-badge-wrap {
   display: inline-flex;
   align-items: center;
@@ -277,7 +283,7 @@ code {
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid rgba(56, 189, 248, 0.2);
   border-radius: var(--radius-pill);
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.35rem;
   box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
 }
 
@@ -303,13 +309,21 @@ code {
 }
 
 .hero-logo-box {
-  margin-bottom: 1.25rem;
-  display: inline-block;
+  margin-bottom: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-logo {
-  border-radius: 22px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), 0 0 30px rgba(56, 189, 248, 0.18);
+  display: block;
+  width: 112px;
+  height: 112px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 25px rgba(56, 189, 248, 0.18));
   transition: transform var(--transition-normal);
 }
 
@@ -518,44 +532,6 @@ code {
   background-color: var(--emerald-400);
   box-shadow: 0 0 8px var(--emerald-400);
   animation: pulse-glow 2s infinite;
-}
-
-.hero-view-toggle,
-.arch-view-controls {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  padding: 2px;
-  gap: 2px;
-}
-
-.hero-toggle-btn,
-.arch-btn-toggle {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.76rem;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  padding: 0.25rem 0.7rem;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.hero-toggle-btn:hover,
-.arch-btn-toggle:hover {
-  color: var(--text-primary);
-}
-
-.hero-toggle-btn.active,
-.arch-btn-toggle.active {
-  background: rgba(56, 189, 248, 0.15);
-  color: var(--cyan-300);
-  font-weight: 600;
-  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 /* Live Demo Telemetry Bar */
@@ -869,12 +845,6 @@ code {
   fill: none;
 }
 
-.hero-visual-img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 /* ==========================================================================
    Section Shared Styles
    ========================================================================== */
@@ -919,14 +889,57 @@ code {
   margin-inline: auto;
 }
 
-/* Intro Section */
 .intro-content {
   background: var(--bg-surface);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-xl);
-  padding: 2.6rem 2.9rem;
+  padding: 2.2rem 2.6rem;
   box-shadow: var(--shadow-md);
   margin-bottom: 2rem;
+}
+
+.intro-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.intro-bullets li {
+  position: relative;
+  padding-left: 1.6rem;
+  font-size: 1.04rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.intro-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan-400);
+  box-shadow: 0 0 8px var(--cyan-400);
+}
+
+.intro-bullets strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.intro-bullets code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--cyan-300);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
 .intro-content p {
@@ -1225,25 +1238,6 @@ code {
   margin: 0;
 }
 
-.arch-figure {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.arch-image-wrap {
-  padding: 1.2rem;
-  background: #080c16;
-}
-
-.arch-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
 .arch-caption {
   padding: 1.25rem 1.6rem;
   background: var(--bg-card);
@@ -1526,7 +1520,7 @@ code {
 }
 
 .footer-brand img {
-  border-radius: 8px;
+  display: block;
 }
 
 .footer-brand span {
